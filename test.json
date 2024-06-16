@@ -1,0 +1,52 @@
+[
+    {
+        "id": "1.",
+        "parent_id": null,
+        "name": "Mindestens 3 der folgenden Kriterien müssen zutreffen",
+        "thresholdType": "minimum",
+        "thresholdMinValue": 3,
+        "thresholdMaxValue": null,
+        "thresholdBoolValue": null,
+        "thresholdUnitOfMeasure": "criteria_children"
+    },
+    {
+        "id": "1.1.",
+        "parent_id": "1.",
+        "name": "A",
+        "thresholdType": "minimum",
+        "thresholdMinValue": 5,
+        "thresholdMaxValue": null,
+        "thresholdBoolValue": null,
+        "thresholdUnitOfMeasure": "kg"
+    },
+    {
+        "id": "1.2.",
+        "parent_id": "1.",
+        "name": "B",
+        "thresholdType": "maximum",
+        "thresholdMinValue": null,
+        "thresholdMaxValue": 3,
+        "thresholdBoolValue": null,
+        "thresholdUnitOfMeasure": "kwh"
+    },
+    {
+        "id": "1.3.",
+        "parent_id": "1.",
+        "name": "C",
+        "thresholdType": "bool",
+        "thresholdMinValue": null,
+        "thresholdMaxValue": null,
+        "thresholdBoolValue": true,
+        "thresholdUnitOfMeasure": null
+    },
+    {
+        "id": "1.4.",
+        "parent_id": "1.",
+        "name": "D",
+        "thresholdType": "bool",
+        "thresholdMinValue": null,
+        "thresholdMaxValue": null,
+        "thresholdBoolValue": false,
+        "thresholdUnitOfMeasure": null
+    }
+]
