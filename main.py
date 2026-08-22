@@ -66,7 +66,7 @@ if __name__ == "__main__":
     run(30, 430)
 
 # Example usage:
-# for i in range(1, 257):
+# for i in range(1, 256):
 #     count_dict = run(i, 200)  # Run Rule for n steps and store the result in "rule_<ruleNo>_output.txt"
 #     uses_all_conditions = True
 #     for key in count_dict:
