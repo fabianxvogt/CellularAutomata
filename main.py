@@ -1,4 +1,30 @@
+import os
+import tempfile
 from pathlib import Path
+
+
+def _write_output_atomically(output_path, lines):
+    """Replace ``output_path`` only after the complete output is written."""
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=output_path.parent,
+            prefix=f".{output_path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            temporary_path = Path(temporary_file.name)
+            for line in lines:
+                temporary_file.write(line + "\n")
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+        os.replace(temporary_path, output_path)
+    except BaseException:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def run(rule, no_steps=100):
@@ -50,14 +76,15 @@ def run(rule, no_steps=100):
     # Write the automaton's history to a text file with leading zeros
     output_dir = Path("output")
     output_dir.mkdir(exist_ok=True)
-    with (output_dir / f"rule_{rule}_output.txt").open("w") as file:
-        for state in automaton_history:
-            line = ''.join(map(str, state))
-            line = line.replace('0', ' ')
-            line = line.replace('1', '■')
-            line = line.rjust(no_steps, '0')
-            print(line)
-            file.write(line + '\n')
+    output_lines = []
+    for state in automaton_history:
+        line = ''.join(map(str, state))
+        line = line.replace('0', ' ')
+        line = line.replace('1', '■')
+        line = line.rjust(no_steps, '0')
+        print(line)
+        output_lines.append(line)
+    _write_output_atomically(output_dir / f"rule_{rule}_output.txt", output_lines)
 
     #print(count_dict)
     return count_dict

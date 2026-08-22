@@ -57,6 +57,43 @@ class RunValidationTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             run(30, 1.5)
 
+    def test_successful_output_replaces_existing_file(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_path = Path(output) / "rule_30_output.txt"
+            output_path.write_text("old output\n", encoding="utf-8")
+            with patch("main.Path", lambda value: Path(output) if value == "output" else Path(value)):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    run(30, 2)
+            self.assertEqual(len(output_path.read_text(encoding="utf-8").splitlines()), 2)
+            self.assertNotIn("old output", output_path.read_text(encoding="utf-8"))
+            self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
+
+    def test_output_failure_preserves_existing_file_and_cleans_temporary_file(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_path = Path(output) / "rule_30_output.txt"
+            original = "existing output\n"
+            output_path.write_text(original, encoding="utf-8")
+            with patch("main.Path", lambda value: Path(output) if value == "output" else Path(value)):
+                with patch("main.os.replace", side_effect=OSError("replace failed")):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaises(OSError):
+                            run(30, 2)
+            self.assertEqual(output_path.read_text(encoding="utf-8"), original)
+            self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
+
+    def test_write_failure_preserves_existing_file_and_cleans_temporary_file(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_path = Path(output) / "rule_30_output.txt"
+            original = "existing output\n"
+            output_path.write_text(original, encoding="utf-8")
+            with patch("main.Path", lambda value: Path(output) if value == "output" else Path(value)):
+                with patch("main.os.fsync", side_effect=OSError("write failed")):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaises(OSError):
+                            run(30, 2)
+            self.assertEqual(output_path.read_text(encoding="utf-8"), original)
+            self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
+
 
 if __name__ == "__main__":
     unittest.main()
