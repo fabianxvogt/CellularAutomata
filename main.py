@@ -2,6 +2,21 @@ from pathlib import Path
 
 
 def run(rule, no_steps=100):
+    """Run a one-dimensional cellular automaton for ``no_steps`` generations.
+
+    ``rule`` is an eight-bit Wolfram rule number and ``no_steps`` must be a
+    positive integer.  Validate these public inputs before creating output so
+    invalid requests fail without partial files or misleading output.
+    """
+    if isinstance(rule, bool) or not isinstance(rule, int):
+        raise TypeError("rule must be an integer from 0 through 255")
+    if not 0 <= rule <= 255:
+        raise ValueError("rule must be an integer from 0 through 255")
+    if isinstance(no_steps, bool) or not isinstance(no_steps, int):
+        raise TypeError("no_steps must be a positive integer")
+    if no_steps <= 0:
+        raise ValueError("no_steps must be a positive integer")
+
     # Define the initial state, typically a single active cell in the middle
     initial_state = [0] * no_steps * 2
     initial_state[no_steps] = 1
