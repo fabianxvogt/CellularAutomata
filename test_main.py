@@ -57,15 +57,14 @@ class RunValidationTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             run(30, 1.5)
 
-    def test_successful_output_replaces_existing_file(self):
+    def test_successful_output_has_expected_content_and_no_temporary_file(self):
         with tempfile.TemporaryDirectory() as output:
             output_path = Path(output) / "rule_30_output.txt"
             output_path.write_text("old output\n", encoding="utf-8")
             with patch("main.Path", lambda value: Path(output) if value == "output" else Path(value)):
                 with contextlib.redirect_stdout(io.StringIO()):
                     run(30, 2)
-            self.assertEqual(len(output_path.read_text(encoding="utf-8").splitlines()), 2)
-            self.assertNotIn("old output", output_path.read_text(encoding="utf-8"))
+            self.assertEqual(output_path.read_text(encoding="utf-8").splitlines(), ["  ■ ", " ■■ "])
             self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
 
     def test_output_failure_preserves_existing_file_and_cleans_temporary_file(self):
@@ -93,6 +92,7 @@ class RunValidationTests(unittest.TestCase):
                             run(30, 2)
             self.assertEqual(output_path.read_text(encoding="utf-8"), original)
             self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
+            self.assertEqual(list(Path(output).iterdir()), [output_path])
 
 
 if __name__ == "__main__":
