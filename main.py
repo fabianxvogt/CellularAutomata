@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 def run(rule, no_steps=100):
     # Define the initial state, typically a single active cell in the middle
     initial_state = [0] * no_steps * 2
@@ -30,7 +33,9 @@ def run(rule, no_steps=100):
         automaton_history.append(new_state)
 
     # Write the automaton's history to a text file with leading zeros
-    with open(f'output/rule_{rule}_output.txt', 'w') as file:
+    output_dir = Path("output")
+    output_dir.mkdir(exist_ok=True)
+    with (output_dir / f"rule_{rule}_output.txt").open("w") as file:
         for state in automaton_history:
             line = ''.join(map(str, state))
             line = line.replace('0', ' ')
@@ -42,7 +47,9 @@ def run(rule, no_steps=100):
     #print(count_dict)
     return count_dict
 
-count_dict = run(30, 430)
+if __name__ == "__main__":
+    run(30, 430)
+
 # Example usage:
 # for i in range(1, 257):
 #     count_dict = run(i, 200)  # Run Rule for n steps and store the result in "rule_<ruleNo>_output.txt"
