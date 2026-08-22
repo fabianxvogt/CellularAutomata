@@ -67,6 +67,20 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(output_path.read_text(encoding="utf-8").splitlines(), ["  ■ ", " ■■ "])
             self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
 
+    def test_keyword_output_dir_writes_to_temporary_directory(self):
+        with tempfile.TemporaryDirectory() as output:
+            target = Path(output) / "nested"
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(30, 2, output_dir=target)
+            self.assertEqual(
+                (target / "rule_30_output.txt").read_text(encoding="utf-8").splitlines(),
+                ["  ■ ", " ■■ "],
+            )
+
+    def test_output_dir_is_keyword_only(self):
+        with self.assertRaises(TypeError):
+            run(30, 1, tempfile.mkdtemp())
+
     def test_output_failure_preserves_existing_file_and_cleans_temporary_file(self):
         with tempfile.TemporaryDirectory() as output:
             output_path = Path(output) / "rule_30_output.txt"

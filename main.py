@@ -27,12 +27,14 @@ def _write_output_atomically(output_path, lines):
         raise
 
 
-def run(rule, no_steps=100):
+def run(rule, no_steps=100, *, output_dir=None):
     """Run a one-dimensional cellular automaton for ``no_steps`` generations.
 
     ``rule`` is an eight-bit Wolfram rule number and ``no_steps`` must be a
-    positive integer.  Validate these public inputs before creating output so
-    invalid requests fail without partial files or misleading output.
+    positive integer. ``output_dir`` optionally selects the directory for the
+    generated output and is keyword-only to preserve positional compatibility.
+    Validate these public inputs before creating output so invalid requests
+    fail without partial files or misleading output.
     """
     if isinstance(rule, bool) or not isinstance(rule, int):
         raise TypeError("rule must be an integer from 0 through 255")
@@ -74,8 +76,8 @@ def run(rule, no_steps=100):
         automaton_history.append(new_state)
 
     # Write the automaton's history to a text file with leading zeros
-    output_dir = Path("output")
-    output_dir.mkdir(exist_ok=True)
+    output_dir = Path("output") if output_dir is None else Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     output_lines = []
     for state in automaton_history:
         line = ''.join(map(str, state))
