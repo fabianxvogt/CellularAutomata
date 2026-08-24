@@ -1,5 +1,6 @@
 import contextlib
 import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -38,6 +39,27 @@ class BatchRunnerTests(unittest.TestCase):
             for rule in (30, 90):
                 self.assertTrue((Path(output) / f"rule_{rule}_output.txt").is_file())
                 self.assertTrue((Path(output) / f"rule_{rule}_metrics.json").is_file())
+
+    def test_run_batch_writes_opt_in_metadata_sidecars(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                batch.run_batch([30, 90], 2, output_dir=output, metadata=True)
+            for rule in (30, 90):
+                metadata = json.loads(
+                    (Path(output) / f"rule_{rule}_metadata.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                self.assertEqual(metadata["rule"], rule)
+                self.assertEqual(metadata["steps"], 2)
+                self.assertFalse(metadata["options"]["metrics"])
+                self.assertFalse(metadata["options"]["svg"])
+                self.assertIsNone(metadata["outputs"]["metrics"])
+                self.assertIsNone(metadata["outputs"]["svg"])
+                self.assertEqual(
+                    metadata["outputs"]["metadata"],
+                    f"rule_{rule}_metadata.json",
+                )
 
     def test_run_batch_writes_svg_sidecars_when_requested(self):
         with tempfile.TemporaryDirectory() as output:

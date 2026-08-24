@@ -53,13 +53,15 @@ def run_batch(
     metrics=False,
     svg=False,
     cell_size=DEFAULT_SVG_CELL_SIZE,
+    metadata=False,
 ):
     """Render each unique rule after validating the complete batch.
 
     The individual renderer prints every row for compatibility with the
     existing API. Batch mode captures those rows and returns the renderer's
     per-rule count dictionaries, keeping the CLI output to one summary line.
-    Optional metrics and SVG sidecars are forwarded to each rule renderer.
+    Optional metrics, SVG, and metadata sidecars are forwarded to each rule
+    renderer.
     """
     values = _validate_rules(rules)
     _validate_steps(no_steps)
@@ -76,6 +78,7 @@ def run_batch(
                 metrics=metrics,
                 svg=svg,
                 cell_size=cell_size,
+                metadata=metadata,
             )
     return results
 
@@ -112,6 +115,11 @@ def build_parser():
         help="write a dependency-free SVG visualization beside each text output",
     )
     parser.add_argument(
+        "--metadata",
+        action="store_true",
+        help="write a JSON run-metadata sidecar beside each text output",
+    )
+    parser.add_argument(
         "--cell-size",
         type=int,
         default=DEFAULT_SVG_CELL_SIZE,
@@ -134,6 +142,7 @@ def main(argv=None):
             metrics=args.metrics,
             svg=args.svg,
             cell_size=args.cell_size,
+            metadata=args.metadata,
         )
     except (TypeError, ValueError) as exc:
         parser.error(str(exc))

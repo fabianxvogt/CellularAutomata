@@ -26,11 +26,15 @@ beside the text output. `--cell-size` controls the square size of each cell:
 python3 main.py --rule 30 --steps 100 --output-dir /tmp/cellular-automata-output --svg --cell-size 4
 ```
 
+Add `--metadata` for an opt-in `rule_30_metadata.json` sidecar containing the
+rule, rendered dimensions, enabled sidecars, and output filenames. The default
+text output is unchanged.
+
 Render several rules in one bounded invocation with the dependency-free batch
 runner:
 
 ```bash
-python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automata-batch --metrics --svg
+python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automata-batch --metrics --svg --metadata
 ```
 
 Batch input is validated completely before any output is created; rule order is

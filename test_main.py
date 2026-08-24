@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from main import (
     active_cell_density,
+    render_metadata,
     render_metrics,
     render_svg,
     run,
@@ -42,6 +43,31 @@ class RunValidationTests(unittest.TestCase):
                 "mean_density": 0.375,
                 "steps": 2,
                 "width": 4,
+            },
+        )
+
+    def test_render_metadata_describes_run_and_requested_outputs(self):
+        self.assertEqual(
+            render_metadata(
+                30,
+                ["  ■ ", " ■■ "],
+                metrics=True,
+                svg=True,
+                cell_size=2,
+                metadata=True,
+            ),
+            {
+                "schema_version": 1,
+                "rule": 30,
+                "steps": 2,
+                "width": 4,
+                "options": {"cell_size": 2, "metrics": True, "svg": True},
+                "outputs": {
+                    "text": "rule_30_output.txt",
+                    "metrics": "rule_30_metrics.json",
+                    "svg": "rule_30_output.svg",
+                    "metadata": "rule_30_metadata.json",
+                },
             },
         )
 
@@ -87,6 +113,40 @@ class RunValidationTests(unittest.TestCase):
                 ["  ■ ", " ■■ "],
             )
             self.assertFalse((Path(output) / "rule_30_metrics.json").exists())
+            self.assertFalse((Path(output) / "rule_30_metadata.json").exists())
+
+    def test_cli_metadata_writes_opt_in_sidecar_without_changing_text_output(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                main.main(
+                    [
+                        "--rule",
+                        "30",
+                        "--steps",
+                        "2",
+                        "--output-dir",
+                        output,
+                        "--metadata",
+                    ]
+                )
+            self.assertEqual(
+                (Path(output) / "rule_30_output.txt").read_text(encoding="utf-8").splitlines(),
+                ["  ■ ", " ■■ "],
+            )
+            metadata = json.loads(
+                (Path(output) / "rule_30_metadata.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(metadata["rule"], 30)
+            self.assertEqual(metadata["steps"], 2)
+            self.assertEqual(metadata["width"], 4)
+            self.assertEqual(
+                metadata["options"],
+                {"cell_size": 4, "metrics": False, "svg": False},
+            )
+            self.assertEqual(metadata["outputs"]["text"], "rule_30_output.txt")
+            self.assertIsNone(metadata["outputs"]["metrics"])
+            self.assertIsNone(metadata["outputs"]["svg"])
+            self.assertEqual(metadata["outputs"]["metadata"], "rule_30_metadata.json")
 
     def test_cli_metrics_writes_structured_json_sidecar(self):
         with tempfile.TemporaryDirectory() as output:

@@ -21,6 +21,7 @@ Rule 30 open-problem project.
 - [x] Add dependency-free batch mode for an ordered set of rules at N steps.
 - [x] Ignore known root-generated artifacts (`test.json`, `output/`) without touching local files.
 - [x] Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
+- [x] Add opt-in JSON run metadata for reproducible sidecar and dimension discovery.
 
 ## Later
 
@@ -53,3 +54,5 @@ Rule 30 open-problem project.
   text output and metrics remain unchanged unless explicitly requested. [EMPIRICAL]
 - 2026-08-25: aligned single and batch Python API validation for `cell_size`, so
   invalid optional SVG settings fail before output-directory creation. [EMPIRICAL]
+- 2026-08-25: added opt-in JSON run metadata for single and batch output;
+  default text output and existing sidecars remain unchanged. [EMPIRICAL]

@@ -104,6 +104,38 @@ def render_metrics(lines):
     }
 
 
+def render_metadata(
+    rule,
+    lines,
+    *,
+    metrics=False,
+    svg=False,
+    cell_size=DEFAULT_SVG_CELL_SIZE,
+    metadata=False,
+):
+    """Return dependency-free metadata describing one rendered run."""
+    rule = validate_rule(rule)
+    rows, width = _validated_rows(lines)
+    cell_size = validate_cell_size(cell_size)
+    return {
+        "schema_version": 1,
+        "rule": rule,
+        "steps": len(rows),
+        "width": width,
+        "options": {
+            "cell_size": cell_size,
+            "metrics": bool(metrics),
+            "svg": bool(svg),
+        },
+        "outputs": {
+            "text": f"rule_{rule}_output.txt",
+            "metrics": f"rule_{rule}_metrics.json" if metrics else None,
+            "svg": f"rule_{rule}_output.svg" if svg else None,
+            "metadata": f"rule_{rule}_metadata.json" if metadata else None,
+        },
+    }
+
+
 def render_svg(lines, *, cell_size=DEFAULT_SVG_CELL_SIZE):
     """Return a dependency-free SVG visualization of rendered automaton rows."""
     rows, width = _validated_rows(lines)
@@ -143,6 +175,7 @@ def run(
     metrics=False,
     svg=False,
     cell_size=DEFAULT_SVG_CELL_SIZE,
+    metadata=False,
 ):
     """Run a one-dimensional cellular automaton for ``no_steps`` generations.
 
@@ -152,6 +185,8 @@ def run(
     When ``metrics`` is true, write a JSON sidecar containing density and
     activity over time. When ``svg`` is true, write a dependency-free SVG
     sidecar; ``cell_size`` controls the square size of each rendered cell.
+    When ``metadata`` is true, write a JSON sidecar describing the run and
+    requested output files.
     Validate these public inputs before creating output so invalid requests
     fail without partial files or misleading output.
     """
@@ -217,6 +252,20 @@ def run(
             render_metrics(output_lines), indent=2, sort_keys=True
         ).splitlines()
         _write_output_atomically(output_dir / f"rule_{rule}_metrics.json", metric_lines)
+    if metadata:
+        metadata_lines = json.dumps(
+            render_metadata(
+                rule,
+                output_lines,
+                metrics=metrics,
+                svg=svg,
+                cell_size=cell_size,
+                metadata=metadata,
+            ),
+            indent=2,
+            sort_keys=True,
+        ).splitlines()
+        _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
 
     #print(count_dict)
     return count_dict
@@ -242,6 +291,11 @@ def build_parser():
         help="write a dependency-free SVG visualization beside the text output",
     )
     parser.add_argument(
+        "--metadata",
+        action="store_true",
+        help="write a JSON run-metadata sidecar beside the text output",
+    )
+    parser.add_argument(
         "--cell-size",
         type=int,
         default=DEFAULT_SVG_CELL_SIZE,
@@ -262,6 +316,7 @@ def main(argv=None):
             metrics=args.metrics,
             svg=args.svg,
             cell_size=args.cell_size,
+            metadata=args.metadata,
         )
     except (TypeError, ValueError) as exc:
         parser = build_parser()
