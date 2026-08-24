@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import sys
 import tempfile
 import unittest
 import xml.etree.ElementTree as ET
@@ -19,6 +20,11 @@ import main
 
 
 class RunValidationTests(unittest.TestCase):
+    def test_readme_declares_supported_python_runtime(self):
+        readme = Path(__file__).with_name("README.md").read_text(encoding="utf-8")
+        self.assertIn("Requires Python 3.9 or newer", readme)
+        self.assertGreaterEqual(sys.version_info[:2], (3, 9))
+
     def test_active_cell_density_measures_rendered_rows(self):
         self.assertEqual(active_cell_density(["  ■ ", " ■■ "]), 3 / 8)
         self.assertEqual(active_cell_density(["000", " ■ "]), 1 / 6)

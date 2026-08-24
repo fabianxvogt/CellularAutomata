@@ -1,6 +1,8 @@
 # CellularAutomata
 Generate all rules for 1D Cellular Automata
 
+Requires Python 3.9 or newer and uses only the Python standard library.
+
 Run the default output behavior from the repository root:
 
 ```python

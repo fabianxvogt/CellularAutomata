@@ -12,7 +12,7 @@ Rule 30 open-problem project.
 2. [x] Render output as a dependency-free SVG sidecar alongside the text files;
    visual patterns are the point of CA experiments.
 3. [x] Run the test suite after the atomic-write, output-dir, and visualization changes.
-4. Pin the Python version in the README when the supported runtime is formalized.
+4. [x] Pin the Python version in the README when the supported runtime is formalized.
 
 ## Next
 
@@ -56,3 +56,5 @@ Rule 30 open-problem project.
   invalid optional SVG settings fail before output-directory creation. [EMPIRICAL]
 - 2026-08-25: added opt-in JSON run metadata for single and batch output;
   default text output and existing sidecars remain unchanged. [EMPIRICAL]
+- 2026-08-25: documented Python 3.9+ as the supported runtime and added a
+  regression check for the README contract. [EMPIRICAL]
