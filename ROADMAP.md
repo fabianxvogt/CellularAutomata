@@ -1,0 +1,37 @@
+# CellularAutomata Roadmap
+
+Small tool that generates 1D elementary cellular automata: `run(rule, steps)` renders a
+rule (e.g. Rule 30 for 100 steps) and writes text output, with configurable output
+directory, atomic writes, and tests. Companion to `toy-projects/GameOfLife` and the
+Rule 30 open-problem project.
+
+## Now
+
+1. Add a CLI entry point (`python main.py --rule 30 --steps 100`) so the tool is usable
+   without writing Python — the README currently only shows the library API.
+2. Render output as an image (PNG via matplotlib or pure PIL) alongside the text files;
+   visual patterns are the point of CA experiments.
+3. Run `pytest` to confirm green after the recent atomic-write/output-dir changes and
+   pin the Python version in the README.
+
+## Next
+
+- Support all 256 elementary rules explicitly with a rule-number validation table test.
+- Add basic metrics per run (density over time, activity) written next to the output.
+- Batch mode: generate a grid of rules (e.g. all rules at N steps) in one invocation.
+- Clean up stray root files (`test.json`, `output/`) — gitignore artifacts, keep fixtures.
+- Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
+
+## Later
+
+- Connection to the Rule 30 open problem (`toy-projects/rule30`): use this generator as
+  the visualization/experiment harness for center-column randomness checks.
+  SPECULATIVE whether anything novel can be computed here — it's a toy.
+- Neighborhood extensions (radius-2, totalistic) if the family write-up warrants it.
+
+## Done
+
+- 2026-08-22: custom `output_dir` support added; automaton output writes made atomic;
+  output/cleanup assertions added to tests.
+- Core implemented: 1D automaton generation with text output (`main.py`, `1d.py`),
+  default Rule 30 demo.
