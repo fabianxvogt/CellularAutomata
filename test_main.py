@@ -15,7 +15,10 @@ from main import (
     render_metrics,
     render_svg,
     run,
+    totalistic_history,
+    totalistic_step,
     validate_rule,
+    validate_totalistic_rule,
 )
 import main
 
@@ -230,6 +233,50 @@ class RunValidationTests(unittest.TestCase):
             [validate_rule(rule) for rule in range(256)],
             list(range(256)),
         )
+
+    def test_totalistic_rule_validator_accepts_complete_six_bit_table(self):
+        self.assertEqual(
+            [validate_totalistic_rule(rule) for rule in range(64)],
+            list(range(64)),
+        )
+
+    def test_totalistic_step_exhaustively_maps_rules_and_neighborhoods(self):
+        for rule in range(64):
+            for neighborhood in range(32):
+                state = [
+                    (neighborhood >> bit) & 1
+                    for bit in range(4, -1, -1)
+                ]
+                with self.subTest(rule=rule, neighborhood=neighborhood):
+                    result = totalistic_step(state, rule)
+                    self.assertEqual(result[:2], [0, 0])
+                    self.assertEqual(result[2], (rule >> sum(state)) & 1)
+                    self.assertEqual(result[3:], [0, 0])
+
+    def test_totalistic_history_uses_seed_and_fixed_radius_two_boundaries(self):
+        self.assertEqual(
+            totalistic_history(63, 4),
+            [
+                [0, 0, 0, 0, 1, 0, 0, 0],
+                [0, 0, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 1, 1, 0, 0],
+            ],
+        )
+
+    def test_totalistic_helpers_reject_invalid_inputs(self):
+        for rule in (-1, 64, True, "30"):
+            with self.subTest(rule=rule):
+                with self.assertRaises((TypeError, ValueError)):
+                    validate_totalistic_rule(rule)
+        for state in ([], [0, 2], [True], "010"):
+            with self.subTest(state=state):
+                with self.assertRaises((TypeError, ValueError)):
+                    totalistic_step(state, 0)
+        for no_steps in (0, -1, True, 1.5):
+            with self.subTest(no_steps=no_steps):
+                with self.assertRaises((TypeError, ValueError)):
+                    totalistic_history(0, no_steps)
 
     def test_rejects_rule_outside_eight_bit_range(self):
         for rule in (-1, 256):

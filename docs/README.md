@@ -18,3 +18,5 @@ Latest runtime metadata note: [run metadata sidecar](agent-wave-2026-08-25-run-m
 Latest runtime support note: [Python runtime contract](agent-wave-2026-08-25-python-runtime.md).
 
 Latest Rule 30 experiment note: [center-column extraction](agent-wave-2026-08-25-center-column.md).
+
+Latest neighborhood note: [radius-2 totalistic core](agent-wave-2026-08-25-totalistic-radius2.md).

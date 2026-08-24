@@ -7,6 +7,8 @@ from pathlib import Path
 
 MIN_RULE = 0
 MAX_RULE = 255
+MIN_TOTALISTIC_RULE = 0
+MAX_TOTALISTIC_RULE = 63
 DEFAULT_SVG_CELL_SIZE = 4
 
 
@@ -17,6 +19,63 @@ def validate_rule(rule):
     if not MIN_RULE <= rule <= MAX_RULE:
         raise ValueError("rule must be an integer from 0 through 255")
     return rule
+
+
+def validate_totalistic_rule(rule):
+    """Validate a radius-2 binary totalistic rule encoded in six bits."""
+    if isinstance(rule, bool) or not isinstance(rule, int):
+        raise TypeError("totalistic rule must be an integer from 0 through 63")
+    if not MIN_TOTALISTIC_RULE <= rule <= MAX_TOTALISTIC_RULE:
+        raise ValueError("totalistic rule must be an integer from 0 through 63")
+    return rule
+
+
+def _validated_binary_state(state):
+    """Return a non-empty, independent copy of a binary state."""
+    try:
+        values = list(state)
+    except TypeError as exc:
+        raise TypeError("state must be an iterable of binary cell values") from exc
+    if not values:
+        raise ValueError("state must contain at least one cell")
+    if any(isinstance(cell, bool) or cell not in (0, 1) for cell in values):
+        raise ValueError("state must contain only binary cell values")
+    return values
+
+
+def totalistic_step(state, rule):
+    """Return one fixed-boundary radius-2 totalistic generation.
+
+    The five-cell neighborhood is reduced to its active-cell count. Bit ``n``
+    of ``rule`` is the result for count ``n`` (counts range from 0 through 5).
+    Cells without a complete radius-2 neighborhood remain dead, matching the
+    existing generator's fixed-dead boundary convention.
+    """
+    rule = validate_totalistic_rule(rule)
+    values = _validated_binary_state(state)
+    new_state = [0] * len(values)
+    for index in range(2, len(values) - 2):
+        active_count = sum(values[index - 2:index + 3])
+        new_state[index] = (rule >> active_count) & 1
+    return new_state
+
+
+def totalistic_history(rule, no_steps=100):
+    """Return seeded history for a radius-2 totalistic rule without writing files."""
+    validate_totalistic_rule(rule)
+    if isinstance(no_steps, bool) or not isinstance(no_steps, int):
+        raise TypeError("no_steps must be a positive integer")
+    if no_steps <= 0:
+        raise ValueError("no_steps must be a positive integer")
+
+    width = no_steps * 2
+    state = [0] * width
+    state[no_steps] = 1
+    history = [state]
+    for _ in range(no_steps - 1):
+        state = totalistic_step(state, rule)
+        history.append(state)
+    return history
 
 
 def _write_output_atomically(output_path, lines):

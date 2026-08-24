@@ -28,7 +28,8 @@ Rule 30 open-problem project.
 - [x] Connection to the Rule 30 open problem (`toy-projects/rule30`): use this generator as
   the visualization/experiment harness for center-column randomness checks.
   SPECULATIVE whether anything novel can be computed here — it's a toy.
-- Neighborhood extensions (radius-2, totalistic) if the family write-up warrants it.
+- [x] Add a dependency-free radius-2 totalistic core with exhaustive rule and
+  neighborhood coverage; full radius-2 non-totalistic rule tables remain deferred.
 
 ## Done
 
@@ -61,3 +62,6 @@ Rule 30 open-problem project.
 - 2026-08-25: added a pure center-column extraction helper for rendered rows;
   it preserves the generator's seeded column convention without changing
   default output. [EMPIRICAL]
+- 2026-08-25: added a pure radius-2 totalistic history core with 64 six-bit rules;
+  existing output and APIs remain unchanged, and all rule/neighborhood pairs are
+  exhaustively tested. [EMPIRICAL]

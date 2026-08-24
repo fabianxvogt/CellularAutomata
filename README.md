@@ -42,6 +42,12 @@ python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automa
 Batch input is validated completely before any output is created; rule order is
 preserved and duplicate rule numbers are rejected.
 
+The deferred neighborhood extension is available as a pure radius-2 totalistic
+core. `totalistic_history(rule, steps)` accepts rules `0–63`, where bit `n`
+controls a five-cell neighborhood containing `n` active cells, and returns the
+seeded binary history without writing files. It uses fixed-dead boundaries;
+the existing `run()` output and API are unchanged.
+
 `--rule` accepts 0–255 and `--steps` must be positive. Invalid inputs fail
 before an output file is created or replaced. The Python `run()` and
 `run_batch()` APIs also validate `cell_size` before creating their output
