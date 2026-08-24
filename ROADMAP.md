@@ -19,7 +19,7 @@ Rule 30 open-problem project.
 - [x] Support all 256 elementary rules explicitly with a rule-number validation table test.
 - [x] Add basic metrics per run (density over time, activity) written next to the output.
 - [x] Add dependency-free batch mode for an ordered set of rules at N steps.
-- Clean up stray root files (`test.json`, `output/`) — gitignore artifacts, keep fixtures.
+- [x] Ignore known root-generated artifacts (`test.json`, `output/`) without touching local files.
 - [x] Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
 
 ## Later
@@ -47,3 +47,5 @@ Rule 30 open-problem project.
   tests cover every accepted rule number from 0 through 255. [EMPIRICAL]
 - 2026-08-25: linked the generator README to the related GameOfLife and Rule 30
   repositories; links are documentation-only and do not change runtime behavior. [EMPIRICAL]
+- 2026-08-25: added root-scoped ignore rules for generated `test.json` and `output/`
+  artifacts; existing local files were preserved. [EMPIRICAL]
