@@ -7,8 +7,8 @@ Rule 30 open-problem project.
 
 ## Now
 
-1. Add a CLI entry point (`python main.py --rule 30 --steps 100`) so the tool is usable
-   without writing Python — the README currently only shows the library API.
+1. [x] Add a CLI entry point (`python3 main.py --rule 30 --steps 100`) so the tool is
+   usable without writing Python.
 2. Render output as an image (PNG via matplotlib or pure PIL) alongside the text files;
    visual patterns are the point of CA experiments.
 3. Run `pytest` to confirm green after the recent atomic-write/output-dir changes and
@@ -35,3 +35,5 @@ Rule 30 open-problem project.
   output/cleanup assertions added to tests.
 - Core implemented: 1D automaton generation with text output (`main.py`, `1d.py`),
   default Rule 30 demo.
+- 2026-08-24: added a dependency-free CLI with explicit rule/step validation and a
+  temporary-output regression test. [EMPIRICAL]

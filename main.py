@@ -1,3 +1,4 @@
+import argparse
 import os
 import tempfile
 from pathlib import Path
@@ -91,8 +92,26 @@ def run(rule, no_steps=100, *, output_dir=None):
     #print(count_dict)
     return count_dict
 
+def build_parser():
+    parser = argparse.ArgumentParser(description="Render a 1D elementary cellular automaton")
+    parser.add_argument("--rule", type=int, default=30, help="Wolfram rule number (0-255)")
+    parser.add_argument("--steps", type=int, default=100, help="positive number of generations")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=None,
+        help="directory for the generated text output",
+    )
+    return parser
+
+
+def main(argv=None):
+    args = build_parser().parse_args(argv)
+    run(args.rule, args.steps, output_dir=args.output_dir)
+
+
 if __name__ == "__main__":
-    run(30, 430)
+    main()
 
 # Example usage:
 # for i in range(1, 256):

@@ -6,9 +6,19 @@ from pathlib import Path
 from unittest.mock import patch
 
 from main import run
+import main
 
 
 class RunValidationTests(unittest.TestCase):
+    def test_cli_writes_to_requested_directory(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                main.main(["--rule", "30", "--steps", "2", "--output-dir", output])
+            self.assertEqual(
+                (Path(output) / "rule_30_output.txt").read_text(encoding="utf-8").splitlines(),
+                ["  ■ ", " ■■ "],
+            )
+
     def test_accepts_rule_boundaries_and_positive_steps(self):
         with tempfile.TemporaryDirectory() as output:
             with patch("main.Path", lambda value: Path(output) if value == "output" else Path(value)):
