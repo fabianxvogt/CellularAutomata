@@ -3,10 +3,17 @@ import io
 import json
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from unittest.mock import patch
 
-from main import active_cell_density, render_metrics, run, validate_rule
+from main import (
+    active_cell_density,
+    render_metrics,
+    render_svg,
+    run,
+    validate_rule,
+)
 import main
 
 
@@ -37,6 +44,21 @@ class RunValidationTests(unittest.TestCase):
                 "width": 4,
             },
         )
+
+    def test_render_svg_contains_background_and_active_cells(self):
+        svg = render_svg(["  ■ ", " ■■ "], cell_size=2)
+        root = ET.fromstring(svg)
+        self.assertIn('viewBox="0 0 8 4"', svg)
+        self.assertIn('width="8" height="4"', svg)
+        self.assertEqual(svg.count('fill="#111827"'), 3)
+        self.assertEqual(root.tag, "{http://www.w3.org/2000/svg}svg")
+        self.assertTrue(svg.endswith("</svg>\n"))
+
+    def test_render_svg_rejects_invalid_cell_size(self):
+        for cell_size in (0, -1, True, "2"):
+            with self.subTest(cell_size=cell_size):
+                with self.assertRaises((TypeError, ValueError)):
+                    render_svg(["■"], cell_size=cell_size)
 
     def test_active_cell_density_can_be_computed_from_run_output(self):
         with tempfile.TemporaryDirectory() as output:
@@ -78,6 +100,35 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(metrics["activity_over_time"], [0.0, 0.25])
             self.assertEqual(metrics["steps"], 2)
             self.assertEqual(metrics["width"], 4)
+
+    def test_cli_svg_writes_sidecar_without_changing_text_output(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                main.main(
+                    [
+                        "--rule",
+                        "30",
+                        "--steps",
+                        "2",
+                        "--output-dir",
+                        output,
+                        "--svg",
+                        "--cell-size",
+                        "2",
+                    ]
+                )
+            self.assertEqual(
+                (Path(output) / "rule_30_output.txt").read_text(encoding="utf-8").splitlines(),
+                ["  ■ ", " ■■ "],
+            )
+            svg = (Path(output) / "rule_30_output.svg").read_text(encoding="utf-8")
+            self.assertIn('viewBox="0 0 8 4"', svg)
+            self.assertFalse((Path(output) / "rule_30_metrics.json").exists())
+
+    def test_cli_rejects_cell_size_without_svg(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                main.main(["--rule", "30", "--steps", "1", "--cell-size", "2"])
 
     def test_accepts_rule_boundaries_and_positive_steps(self):
         with tempfile.TemporaryDirectory() as output:

@@ -7,6 +7,7 @@ from pathlib import Path
 
 MIN_RULE = 0
 MAX_RULE = 255
+DEFAULT_SVG_CELL_SIZE = 4
 
 
 def validate_rule(rule):
@@ -59,6 +60,15 @@ def _validated_rows(lines):
     return rows, width
 
 
+def validate_cell_size(cell_size):
+    """Validate and return the pixel size used for SVG cells."""
+    if isinstance(cell_size, bool) or not isinstance(cell_size, int):
+        raise TypeError("cell_size must be a positive integer")
+    if cell_size <= 0:
+        raise ValueError("cell_size must be a positive integer")
+    return cell_size
+
+
 def active_cell_density(lines):
     """Return the fraction of rendered cells marked active.
 
@@ -94,14 +104,54 @@ def render_metrics(lines):
     }
 
 
-def run(rule, no_steps=100, *, output_dir=None, metrics=False):
+def render_svg(lines, *, cell_size=DEFAULT_SVG_CELL_SIZE):
+    """Return a dependency-free SVG visualization of rendered automaton rows."""
+    rows, width = _validated_rows(lines)
+    cell_size = validate_cell_size(cell_size)
+    svg_width = width * cell_size
+    svg_height = len(rows) * cell_size
+    svg_lines = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" '
+            f'viewBox="0 0 {svg_width} {svg_height}" '
+            f'width="{svg_width}" height="{svg_height}" '
+            'role="img" aria-labelledby="title" '
+            'shape-rendering="crispEdges">'
+        ),
+        '<title id="title">Elementary cellular automaton</title>',
+        f'<rect width="{svg_width}" height="{svg_height}" fill="#ffffff"/>',
+    ]
+    for row_index, row in enumerate(rows):
+        for column_index, marker in enumerate(row):
+            if marker == "■":
+                svg_lines.append(
+                    f'<rect x="{column_index * cell_size}" '
+                    f'y="{row_index * cell_size}" '
+                    f'width="{cell_size}" height="{cell_size}" '
+                    'fill="#111827"/>'
+                )
+    svg_lines.append("</svg>")
+    return "\n".join(svg_lines) + "\n"
+
+
+def run(
+    rule,
+    no_steps=100,
+    *,
+    output_dir=None,
+    metrics=False,
+    svg=False,
+    cell_size=DEFAULT_SVG_CELL_SIZE,
+):
     """Run a one-dimensional cellular automaton for ``no_steps`` generations.
 
     ``rule`` is an eight-bit Wolfram rule number and ``no_steps`` must be a
     positive integer. ``output_dir`` optionally selects the directory for the
     generated output and is keyword-only to preserve positional compatibility.
     When ``metrics`` is true, write a JSON sidecar containing density and
-    activity over time.
+    activity over time. When ``svg`` is true, write a dependency-free SVG
+    sidecar; ``cell_size`` controls the square size of each rendered cell.
     Validate these public inputs before creating output so invalid requests
     fail without partial files or misleading output.
     """
@@ -110,6 +160,8 @@ def run(rule, no_steps=100, *, output_dir=None, metrics=False):
         raise TypeError("no_steps must be a positive integer")
     if no_steps <= 0:
         raise ValueError("no_steps must be a positive integer")
+    if svg:
+        validate_cell_size(cell_size)
 
     # Define the initial state, typically a single active cell in the middle
     initial_state = [0] * no_steps * 2
@@ -153,6 +205,11 @@ def run(rule, no_steps=100, *, output_dir=None, metrics=False):
         print(line)
         output_lines.append(line)
     _write_output_atomically(output_dir / f"rule_{rule}_output.txt", output_lines)
+    if svg:
+        _write_output_atomically(
+            output_dir / f"rule_{rule}_output.svg",
+            render_svg(output_lines, cell_size=cell_size).splitlines(),
+        )
     if metrics:
         metric_lines = json.dumps(
             render_metrics(output_lines), indent=2, sort_keys=True
@@ -177,12 +234,36 @@ def build_parser():
         action="store_true",
         help="write density and activity metrics as JSON beside the text output",
     )
+    parser.add_argument(
+        "--svg",
+        action="store_true",
+        help="write a dependency-free SVG visualization beside the text output",
+    )
+    parser.add_argument(
+        "--cell-size",
+        type=int,
+        default=DEFAULT_SVG_CELL_SIZE,
+        help="SVG cell size in pixels (used with --svg; default: 4)",
+    )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    run(args.rule, args.steps, output_dir=args.output_dir, metrics=args.metrics)
+    if not args.svg and args.cell_size != DEFAULT_SVG_CELL_SIZE:
+        build_parser().error("--cell-size requires --svg")
+    try:
+        run(
+            args.rule,
+            args.steps,
+            output_dir=args.output_dir,
+            metrics=args.metrics,
+            svg=args.svg,
+            cell_size=args.cell_size,
+        )
+    except (TypeError, ValueError) as exc:
+        parser = build_parser()
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":

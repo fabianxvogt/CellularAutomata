@@ -9,10 +9,10 @@ Rule 30 open-problem project.
 
 1. [x] Add a CLI entry point (`python3 main.py --rule 30 --steps 100`) so the tool is
    usable without writing Python.
-2. Render output as an image (PNG via matplotlib or pure PIL) alongside the text files;
+2. [x] Render output as a dependency-free SVG sidecar alongside the text files;
    visual patterns are the point of CA experiments.
-3. Run `pytest` to confirm green after the recent atomic-write/output-dir changes and
-   pin the Python version in the README.
+3. [x] Run the test suite after the atomic-write, output-dir, and visualization changes.
+4. Pin the Python version in the README when the supported runtime is formalized.
 
 ## Next
 
@@ -49,3 +49,5 @@ Rule 30 open-problem project.
   repositories; links are documentation-only and do not change runtime behavior. [EMPIRICAL]
 - 2026-08-25: added root-scoped ignore rules for generated `test.json` and `output/`
   artifacts; existing local files were preserved. [EMPIRICAL]
+- 2026-08-25: added opt-in dependency-free SVG sidecars for single and batch runs;
+  text output and metrics remain unchanged unless explicitly requested. [EMPIRICAL]

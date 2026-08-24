@@ -39,6 +39,15 @@ class BatchRunnerTests(unittest.TestCase):
                 self.assertTrue((Path(output) / f"rule_{rule}_output.txt").is_file())
                 self.assertTrue((Path(output) / f"rule_{rule}_metrics.json").is_file())
 
+    def test_run_batch_writes_svg_sidecars_when_requested(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                batch.run_batch([30, 90], 2, output_dir=output, svg=True)
+            for rule in (30, 90):
+                svg_path = Path(output) / f"rule_{rule}_output.svg"
+                self.assertTrue(svg_path.is_file())
+                self.assertIn("<svg ", svg_path.read_text(encoding="utf-8"))
+
     def test_cli_reports_one_summary_for_a_batch(self):
         with tempfile.TemporaryDirectory() as output:
             captured = io.StringIO()
@@ -49,6 +58,11 @@ class BatchRunnerTests(unittest.TestCase):
             self.assertEqual(
                 captured.getvalue(), "generated 2 rule outputs (2 steps each)\n"
             )
+
+    def test_cli_rejects_cell_size_without_svg(self):
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                batch.main(["--rules", "30", "--steps", "1", "--cell-size", "2"])
 
 
 if __name__ == "__main__":

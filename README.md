@@ -19,11 +19,18 @@ Add `--metrics` to write `rule_30_metrics.json` beside the text output. The
 sidecar contains density and changed-cell activity for each generation, plus
 their means.
 
+Add `--svg` to write a dependency-free `rule_30_output.svg` visualization
+beside the text output. `--cell-size` controls the square size of each cell:
+
+```bash
+python3 main.py --rule 30 --steps 100 --output-dir /tmp/cellular-automata-output --svg --cell-size 4
+```
+
 Render several rules in one bounded invocation with the dependency-free batch
 runner:
 
 ```bash
-python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automata-batch --metrics
+python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automata-batch --metrics --svg
 ```
 
 Batch input is validated completely before any output is created; rule order is

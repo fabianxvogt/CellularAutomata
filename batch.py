@@ -5,7 +5,7 @@ import contextlib
 import io
 from pathlib import Path
 
-from main import validate_rule, run
+from main import DEFAULT_SVG_CELL_SIZE, run, validate_cell_size, validate_rule
 
 
 def _validate_rules(rules):
@@ -45,15 +45,26 @@ def _validate_steps(no_steps):
         raise ValueError("no_steps must be a positive integer")
 
 
-def run_batch(rules, no_steps=100, *, output_dir=None, metrics=False):
+def run_batch(
+    rules,
+    no_steps=100,
+    *,
+    output_dir=None,
+    metrics=False,
+    svg=False,
+    cell_size=DEFAULT_SVG_CELL_SIZE,
+):
     """Render each unique rule after validating the complete batch.
 
     The individual renderer prints every row for compatibility with the
     existing API. Batch mode captures those rows and returns the renderer's
     per-rule count dictionaries, keeping the CLI output to one summary line.
+    Optional metrics and SVG sidecars are forwarded to each rule renderer.
     """
     values = _validate_rules(rules)
     _validate_steps(no_steps)
+    if svg:
+        validate_cell_size(cell_size)
     results = {}
     for rule in values:
         with contextlib.redirect_stdout(io.StringIO()):
@@ -62,6 +73,8 @@ def run_batch(rules, no_steps=100, *, output_dir=None, metrics=False):
                 no_steps,
                 output_dir=output_dir,
                 metrics=metrics,
+                svg=svg,
+                cell_size=cell_size,
             )
     return results
 
@@ -92,12 +105,25 @@ def build_parser():
         action="store_true",
         help="write density and activity metrics beside each text output",
     )
+    parser.add_argument(
+        "--svg",
+        action="store_true",
+        help="write a dependency-free SVG visualization beside each text output",
+    )
+    parser.add_argument(
+        "--cell-size",
+        type=int,
+        default=DEFAULT_SVG_CELL_SIZE,
+        help="SVG cell size in pixels (used with --svg; default: 4)",
+    )
     return parser
 
 
 def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
+    if not args.svg and args.cell_size != DEFAULT_SVG_CELL_SIZE:
+        parser.error("--cell-size requires --svg")
     try:
         rules = parse_rules(args.rules)
         run_batch(
@@ -105,6 +131,8 @@ def main(argv=None):
             args.steps,
             output_dir=args.output_dir,
             metrics=args.metrics,
+            svg=args.svg,
+            cell_size=args.cell_size,
         )
     except (TypeError, ValueError) as exc:
         parser.error(str(exc))

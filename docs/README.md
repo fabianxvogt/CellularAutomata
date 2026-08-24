@@ -8,3 +8,5 @@ Never store credentials, private data, generated output, logs, datasets, or buil
 
 Current evidence: [elementary-rule validation table](agent-wave-2026-08-25-rule-validation.md)
 and [project-family cross-links](agent-wave-2026-08-25-family-links.md).
+
+Latest bounded change: [dependency-free SVG visualization](agent-wave-2026-08-25-svg-visualization.md).
