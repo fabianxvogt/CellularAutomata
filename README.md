@@ -48,6 +48,16 @@ controls a five-cell neighborhood containing `n` active cells, and returns the
 seeded binary history without writing files. It uses fixed-dead boundaries;
 the existing `run()` output and API are unchanged.
 
+For a dependency-free command-line entry point, print the same history as JSON
+to standard output:
+
+```bash
+python3 totalistic.py --rule 63 --steps 4
+```
+
+The totalistic CLI requires a rule from `0–63`, defaults `--steps` to `100`,
+and does not create or modify files.
+
 `--rule` accepts 0–255 and `--steps` must be positive. Invalid inputs fail
 before an output file is created or replaced. The Python `run()` and
 `run_batch()` APIs also validate `cell_size` before creating their output

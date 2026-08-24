@@ -20,3 +20,5 @@ Latest runtime support note: [Python runtime contract](agent-wave-2026-08-25-pyt
 Latest Rule 30 experiment note: [center-column extraction](agent-wave-2026-08-25-center-column.md).
 
 Latest neighborhood note: [radius-2 totalistic core](agent-wave-2026-08-25-totalistic-radius2.md).
+
+Latest totalistic usability note: [radius-2 totalistic CLI](agent-wave-2026-08-25-totalistic-cli.md).

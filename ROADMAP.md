@@ -65,3 +65,6 @@ Rule 30 open-problem project.
 - 2026-08-25: added a pure radius-2 totalistic history core with 64 six-bit rules;
   existing output and APIs remain unchanged, and all rule/neighborhood pairs are
   exhaustively tested. [EMPIRICAL]
+- 2026-08-25: added a standalone dependency-free totalistic CLI that emits the
+  existing binary history as JSON on standard output; the elementary CLI and
+  default files remain unchanged. [EMPIRICAL]
