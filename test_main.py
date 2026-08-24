@@ -5,11 +5,34 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import run
+from main import active_cell_density, run
 import main
 
 
 class RunValidationTests(unittest.TestCase):
+    def test_active_cell_density_measures_rendered_rows(self):
+        self.assertEqual(active_cell_density(["  ■ ", " ■■ "]), 3 / 8)
+        self.assertEqual(active_cell_density(["000", " ■ "]), 1 / 6)
+
+    def test_active_cell_density_rejects_empty_or_malformed_rows(self):
+        with self.assertRaises(ValueError):
+            active_cell_density([])
+        with self.assertRaises(ValueError):
+            active_cell_density(["■", "  "])
+        with self.assertRaises(ValueError):
+            active_cell_density(["x"])
+        with self.assertRaises(TypeError):
+            active_cell_density([["■"]])
+
+    def test_active_cell_density_can_be_computed_from_run_output(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(30, 2, output_dir=output)
+            lines = (Path(output) / "rule_30_output.txt").read_text(
+                encoding="utf-8"
+            ).splitlines()
+            self.assertEqual(active_cell_density(lines), 3 / 8)
+
     def test_cli_writes_to_requested_directory(self):
         with tempfile.TemporaryDirectory() as output:
             with contextlib.redirect_stdout(io.StringIO()):

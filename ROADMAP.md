@@ -37,3 +37,5 @@ Rule 30 open-problem project.
   default Rule 30 demo.
 - 2026-08-24: added a dependency-free CLI with explicit rule/step validation and a
   temporary-output regression test. [EMPIRICAL]
+- 2026-08-25: added a dependency-free active-cell density helper over rendered rows;
+  the text output contract and existing `run()` result remain unchanged. [EMPIRICAL]

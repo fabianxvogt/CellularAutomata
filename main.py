@@ -28,6 +28,30 @@ def _write_output_atomically(output_path, lines):
         raise
 
 
+def active_cell_density(lines):
+    """Return the fraction of rendered cells marked active.
+
+    ``lines`` are rows from the text output. ``■`` is active; spaces and the
+    legacy ``0`` padding marker are inactive. The helper is pure and does not
+    read or modify files.
+    """
+    rows = list(lines)
+    if not rows:
+        raise ValueError("lines must contain at least one row")
+    if any(not isinstance(row, str) for row in rows):
+        raise TypeError("lines must contain strings")
+
+    width = len(rows[0])
+    if width == 0 or any(len(row) != width for row in rows):
+        raise ValueError("lines must contain equally sized, non-empty rows")
+    allowed_markers = {" ", "0", "■"}
+    if any(marker not in allowed_markers for row in rows for marker in row):
+        raise ValueError("lines contain a character outside the text output format")
+
+    active_cells = sum(row.count("■") for row in rows)
+    return active_cells / (len(rows) * width)
+
+
 def run(rule, no_steps=100, *, output_dir=None):
     """Run a one-dimensional cellular automaton for ``no_steps`` generations.
 
