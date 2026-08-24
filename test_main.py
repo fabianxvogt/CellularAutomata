@@ -1,11 +1,12 @@
 import contextlib
 import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import active_cell_density, run
+from main import active_cell_density, render_metrics, run
 import main
 
 
@@ -24,6 +25,19 @@ class RunValidationTests(unittest.TestCase):
         with self.assertRaises(TypeError):
             active_cell_density([["■"]])
 
+    def test_render_metrics_reports_density_and_activity(self):
+        self.assertEqual(
+            render_metrics(["  ■ ", " ■■ "]),
+            {
+                "activity_over_time": [0.0, 0.25],
+                "density_over_time": [0.25, 0.5],
+                "mean_activity": 0.125,
+                "mean_density": 0.375,
+                "steps": 2,
+                "width": 4,
+            },
+        )
+
     def test_active_cell_density_can_be_computed_from_run_output(self):
         with tempfile.TemporaryDirectory() as output:
             with contextlib.redirect_stdout(io.StringIO()):
@@ -41,6 +55,29 @@ class RunValidationTests(unittest.TestCase):
                 (Path(output) / "rule_30_output.txt").read_text(encoding="utf-8").splitlines(),
                 ["  ■ ", " ■■ "],
             )
+            self.assertFalse((Path(output) / "rule_30_metrics.json").exists())
+
+    def test_cli_metrics_writes_structured_json_sidecar(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                main.main(
+                    [
+                        "--rule",
+                        "30",
+                        "--steps",
+                        "2",
+                        "--output-dir",
+                        output,
+                        "--metrics",
+                    ]
+                )
+            metrics = json.loads(
+                (Path(output) / "rule_30_metrics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(metrics["density_over_time"], [0.25, 0.5])
+            self.assertEqual(metrics["activity_over_time"], [0.0, 0.25])
+            self.assertEqual(metrics["steps"], 2)
+            self.assertEqual(metrics["width"], 4)
 
     def test_accepts_rule_boundaries_and_positive_steps(self):
         with tempfile.TemporaryDirectory() as output:

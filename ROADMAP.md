@@ -17,8 +17,8 @@ Rule 30 open-problem project.
 ## Next
 
 - Support all 256 elementary rules explicitly with a rule-number validation table test.
-- Add basic metrics per run (density over time, activity) written next to the output.
-- Batch mode: generate a grid of rules (e.g. all rules at N steps) in one invocation.
+- [x] Add basic metrics per run (density over time, activity) written next to the output.
+- [x] Add dependency-free batch mode for an ordered set of rules at N steps.
 - Clean up stray root files (`test.json`, `output/`) — gitignore artifacts, keep fixtures.
 - Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
 
@@ -39,3 +39,7 @@ Rule 30 open-problem project.
   temporary-output regression test. [EMPIRICAL]
 - 2026-08-25: added a dependency-free active-cell density helper over rendered rows;
   the text output contract and existing `run()` result remain unchanged. [EMPIRICAL]
+- 2026-08-25: added opt-in structured JSON metrics with density and changed-cell
+  activity over time via `--metrics`; text output and default behavior remain unchanged. [EMPIRICAL]
+- 2026-08-25: added dependency-free batch rendering with complete pre-validation,
+  ordered outputs, and optional metrics sidecars. [EMPIRICAL]

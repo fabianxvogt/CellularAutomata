@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import tempfile
 from pathlib import Path
@@ -28,13 +29,8 @@ def _write_output_atomically(output_path, lines):
         raise
 
 
-def active_cell_density(lines):
-    """Return the fraction of rendered cells marked active.
-
-    ``lines`` are rows from the text output. ``■`` is active; spaces and the
-    legacy ``0`` padding marker are inactive. The helper is pure and does not
-    read or modify files.
-    """
+def _validated_rows(lines):
+    """Return equally sized, non-empty text-output rows and their width."""
     rows = list(lines)
     if not rows:
         raise ValueError("lines must contain at least one row")
@@ -47,17 +43,52 @@ def active_cell_density(lines):
     allowed_markers = {" ", "0", "■"}
     if any(marker not in allowed_markers for row in rows for marker in row):
         raise ValueError("lines contain a character outside the text output format")
+    return rows, width
 
+
+def active_cell_density(lines):
+    """Return the fraction of rendered cells marked active.
+
+    ``lines`` are rows from the text output. ``■`` is active; spaces and the
+    legacy ``0`` padding marker are inactive. The helper is pure and does not
+    read or modify files.
+    """
+    rows, width = _validated_rows(lines)
     active_cells = sum(row.count("■") for row in rows)
     return active_cells / (len(rows) * width)
 
 
-def run(rule, no_steps=100, *, output_dir=None):
+def render_metrics(lines):
+    """Return dependency-free density and activity metrics for rendered rows.
+
+    Activity is the fraction of cells that changed from the previous row;
+    generation zero has no predecessor and is therefore reported as ``0.0``.
+    """
+    rows, width = _validated_rows(lines)
+    density_over_time = [row.count("■") / width for row in rows]
+    activity_over_time = [0.0]
+    for previous, current in zip(rows, rows[1:]):
+        changed_cells = sum(left != right for left, right in zip(previous, current))
+        activity_over_time.append(changed_cells / width)
+
+    return {
+        "activity_over_time": activity_over_time,
+        "density_over_time": density_over_time,
+        "mean_activity": sum(activity_over_time) / len(activity_over_time),
+        "mean_density": sum(density_over_time) / len(density_over_time),
+        "steps": len(rows),
+        "width": width,
+    }
+
+
+def run(rule, no_steps=100, *, output_dir=None, metrics=False):
     """Run a one-dimensional cellular automaton for ``no_steps`` generations.
 
     ``rule`` is an eight-bit Wolfram rule number and ``no_steps`` must be a
     positive integer. ``output_dir`` optionally selects the directory for the
     generated output and is keyword-only to preserve positional compatibility.
+    When ``metrics`` is true, write a JSON sidecar containing density and
+    activity over time.
     Validate these public inputs before creating output so invalid requests
     fail without partial files or misleading output.
     """
@@ -112,6 +143,11 @@ def run(rule, no_steps=100, *, output_dir=None):
         print(line)
         output_lines.append(line)
     _write_output_atomically(output_dir / f"rule_{rule}_output.txt", output_lines)
+    if metrics:
+        metric_lines = json.dumps(
+            render_metrics(output_lines), indent=2, sort_keys=True
+        ).splitlines()
+        _write_output_atomically(output_dir / f"rule_{rule}_metrics.json", metric_lines)
 
     #print(count_dict)
     return count_dict
@@ -126,12 +162,17 @@ def build_parser():
         default=None,
         help="directory for the generated text output",
     )
+    parser.add_argument(
+        "--metrics",
+        action="store_true",
+        help="write density and activity metrics as JSON beside the text output",
+    )
     return parser
 
 
 def main(argv=None):
     args = build_parser().parse_args(argv)
-    run(args.rule, args.steps, output_dir=args.output_dir)
+    run(args.rule, args.steps, output_dir=args.output_dir, metrics=args.metrics)
 
 
 if __name__ == "__main__":
