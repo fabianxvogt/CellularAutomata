@@ -40,3 +40,10 @@ from main import run
 
 run(30, 100, output_dir=Path("/tmp/cellular-automata-output"))
 ```
+
+## Related projects
+
+- [GameOfLife](https://github.com/fabianxvogt/GameOfLife) explores two-dimensional
+  cellular automata and pattern evolution.
+- [Rule 30](https://github.com/fabianxvogt/rule30) studies bounded successor checks
+  and predictive-state experiments for the elementary Rule 30 family.

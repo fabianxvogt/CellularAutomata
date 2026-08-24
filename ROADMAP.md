@@ -20,7 +20,7 @@ Rule 30 open-problem project.
 - [x] Add basic metrics per run (density over time, activity) written next to the output.
 - [x] Add dependency-free batch mode for an ordered set of rules at N steps.
 - Clean up stray root files (`test.json`, `output/`) — gitignore artifacts, keep fixtures.
-- Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
+- [x] Cross-link READMEs with GameOfLife and rule30 projects as one cellular-automata family.
 
 ## Later
 
@@ -45,3 +45,5 @@ Rule 30 open-problem project.
   ordered outputs, and optional metrics sidecars. [EMPIRICAL]
 - 2026-08-25: centralized elementary-rule validation for single and batch runs;
   tests cover every accepted rule number from 0 through 255. [EMPIRICAL]
+- 2026-08-25: linked the generator README to the related GameOfLife and Rule 30
+  repositories; links are documentation-only and do not change runtime behavior. [EMPIRICAL]
