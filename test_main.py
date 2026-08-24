@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from main import (
     active_cell_density,
+    center_column,
     render_metadata,
     render_metrics,
     render_svg,
@@ -38,6 +39,18 @@ class RunValidationTests(unittest.TestCase):
             active_cell_density(["x"])
         with self.assertRaises(TypeError):
             active_cell_density([["■"]])
+
+    def test_center_column_tracks_the_generator_seed_column(self):
+        self.assertEqual(center_column(["  ■ ", " ■■ ", " ■ ■"]), "110")
+        self.assertEqual(center_column(["■  ", " ■ ", "  ■"]), "010")
+
+    def test_center_column_rejects_empty_or_malformed_rows(self):
+        with self.assertRaises(ValueError):
+            center_column([])
+        with self.assertRaises(ValueError):
+            center_column(["■", "  "])
+        with self.assertRaises(TypeError):
+            center_column([["■"]])
 
     def test_render_metrics_reports_density_and_activity(self):
         self.assertEqual(

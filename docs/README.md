@@ -16,3 +16,5 @@ Latest API-hardening note: [cell-size validation contract](agent-wave-2026-08-25
 Latest runtime metadata note: [run metadata sidecar](agent-wave-2026-08-25-run-metadata.md).
 
 Latest runtime support note: [Python runtime contract](agent-wave-2026-08-25-python-runtime.md).
+
+Latest Rule 30 experiment note: [center-column extraction](agent-wave-2026-08-25-center-column.md).

@@ -81,6 +81,17 @@ def active_cell_density(lines):
     return active_cells / (len(rows) * width)
 
 
+def center_column(lines):
+    """Return the center-cell states as a binary string.
+
+    The generator seeds the right-hand center column for its even-width
+    rendered rows, so ``width // 2`` preserves the initial-condition column.
+    """
+    rows, width = _validated_rows(lines)
+    center_index = width // 2
+    return "".join("1" if row[center_index] == "■" else "0" for row in rows)
+
+
 def render_metrics(lines):
     """Return dependency-free density and activity metrics for rendered rows.
 

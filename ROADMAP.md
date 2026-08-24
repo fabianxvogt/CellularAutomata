@@ -25,7 +25,7 @@ Rule 30 open-problem project.
 
 ## Later
 
-- Connection to the Rule 30 open problem (`toy-projects/rule30`): use this generator as
+- [x] Connection to the Rule 30 open problem (`toy-projects/rule30`): use this generator as
   the visualization/experiment harness for center-column randomness checks.
   SPECULATIVE whether anything novel can be computed here — it's a toy.
 - Neighborhood extensions (radius-2, totalistic) if the family write-up warrants it.
@@ -58,3 +58,6 @@ Rule 30 open-problem project.
   default text output and existing sidecars remain unchanged. [EMPIRICAL]
 - 2026-08-25: documented Python 3.9+ as the supported runtime and added a
   regression check for the README contract. [EMPIRICAL]
+- 2026-08-25: added a pure center-column extraction helper for rendered rows;
+  it preserves the generator's seeded column convention without changing
+  default output. [EMPIRICAL]
