@@ -68,3 +68,6 @@ Rule 30 open-problem project.
 - 2026-08-25: added a standalone dependency-free totalistic CLI that emits the
   existing binary history as JSON on standard output; the elementary CLI and
   default files remain unchanged. [EMPIRICAL]
+- 2026-08-25: added an opt-in self-describing totalistic metadata envelope via
+  the API and CLI; raw history JSON and existing defaults remain unchanged.
+  [EMPIRICAL]

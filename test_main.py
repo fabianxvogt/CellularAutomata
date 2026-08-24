@@ -15,6 +15,7 @@ from main import (
     render_metrics,
     render_svg,
     run,
+    totalistic_metadata,
     totalistic_history,
     totalistic_step,
     validate_rule,
@@ -263,6 +264,23 @@ class RunValidationTests(unittest.TestCase):
                 [0, 0, 1, 1, 1, 1, 0, 0],
             ],
         )
+
+    def test_totalistic_metadata_describes_history_generation_contract(self):
+        payload = totalistic_metadata(63, 4)
+        self.assertEqual(
+            {key: payload[key] for key in payload if key != "history"},
+            {
+                "schema_version": 1,
+                "radius": 2,
+                "rule": 63,
+                "rule_encoding": "bit n = output for n active cells",
+                "steps": 4,
+                "width": 8,
+                "seed_index": 4,
+                "boundary": "fixed-dead",
+            },
+        )
+        self.assertEqual(payload["history"], totalistic_history(63, 4))
 
     def test_totalistic_helpers_reject_invalid_inputs(self):
         for rule in (-1, 64, True, "30"):

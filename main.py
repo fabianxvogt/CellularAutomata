@@ -78,6 +78,23 @@ def totalistic_history(rule, no_steps=100):
     return history
 
 
+def totalistic_metadata(rule, no_steps=100):
+    """Return a self-describing JSON-compatible totalistic history payload."""
+    rule = validate_totalistic_rule(rule)
+    history = totalistic_history(rule, no_steps)
+    return {
+        "schema_version": 1,
+        "radius": 2,
+        "rule": rule,
+        "rule_encoding": "bit n = output for n active cells",
+        "steps": no_steps,
+        "width": len(history[0]),
+        "seed_index": history[0].index(1),
+        "boundary": "fixed-dead",
+        "history": history,
+    }
+
+
 def _write_output_atomically(output_path, lines):
     """Replace ``output_path`` only after the complete output is written."""
     temporary_path = None

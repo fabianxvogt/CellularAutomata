@@ -16,8 +16,34 @@ class TotalisticCliTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             totalistic.main(["--rule", "63", "--steps", "4"])
 
+        expected = [
+            [0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 0, 1, 1, 1, 1, 0, 0],
+        ]
         self.assertEqual(
             json.loads(output.getvalue()),
+            expected,
+        )
+        self.assertEqual(output.getvalue(), json.dumps(expected) + "\n")
+
+    def test_cli_metadata_wraps_history_with_reproduction_contract(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            totalistic.main(["--rule", "63", "--steps", "4", "--metadata"])
+
+        payload = json.loads(output.getvalue())
+        self.assertEqual(payload["schema_version"], 1)
+        self.assertEqual(payload["radius"], 2)
+        self.assertEqual(payload["rule"], 63)
+        self.assertEqual(payload["steps"], 4)
+        self.assertEqual(payload["width"], 8)
+        self.assertEqual(payload["seed_index"], 4)
+        self.assertEqual(payload["boundary"], "fixed-dead")
+        self.assertEqual(payload["rule_encoding"], "bit n = output for n active cells")
+        self.assertEqual(
+            payload["history"],
             [
                 [0, 0, 0, 0, 1, 0, 0, 0],
                 [0, 0, 1, 1, 1, 1, 0, 0],

@@ -23,3 +23,5 @@ Latest Rule 30 experiment note: [center-column extraction](agent-wave-2026-08-25
 Latest neighborhood note: [radius-2 totalistic core](agent-wave-2026-08-25-totalistic-radius2.md).
 
 Latest totalistic usability note: [radius-2 totalistic CLI](agent-wave-2026-08-25-totalistic-cli.md).
+
+Latest totalistic reproducibility note: [self-describing totalistic metadata](agent-wave-2026-08-25-totalistic-metadata.md).
