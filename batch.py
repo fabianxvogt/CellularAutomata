@@ -63,8 +63,9 @@ def run_batch(
     """
     values = _validate_rules(rules)
     _validate_steps(no_steps)
-    if svg:
-        validate_cell_size(cell_size)
+    # Keep batch validation aligned with ``run`` so invalid optional SVG
+    # settings fail before the first rule can create an output file.
+    validate_cell_size(cell_size)
     results = {}
     for rule in values:
         with contextlib.redirect_stdout(io.StringIO()):

@@ -48,6 +48,15 @@ class BatchRunnerTests(unittest.TestCase):
                 self.assertTrue(svg_path.is_file())
                 self.assertIn("<svg ", svg_path.read_text(encoding="utf-8"))
 
+    def test_run_batch_rejects_invalid_cell_size_before_first_output(self):
+        with tempfile.TemporaryDirectory() as parent:
+            output = Path(parent) / "not-created"
+            for cell_size in (0, True, "2"):
+                with self.subTest(cell_size=cell_size):
+                    with self.assertRaises((TypeError, ValueError)):
+                        batch.run_batch([30, 90], 2, output_dir=output, cell_size=cell_size)
+                    self.assertFalse(output.exists())
+
     def test_cli_reports_one_summary_for_a_batch(self):
         with tempfile.TemporaryDirectory() as output:
             captured = io.StringIO()

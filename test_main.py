@@ -60,6 +60,15 @@ class RunValidationTests(unittest.TestCase):
                 with self.assertRaises((TypeError, ValueError)):
                     render_svg(["■"], cell_size=cell_size)
 
+    def test_run_rejects_invalid_cell_size_before_creating_output(self):
+        with tempfile.TemporaryDirectory() as parent:
+            output = Path(parent) / "not-created"
+            for cell_size in (0, True, "2"):
+                with self.subTest(cell_size=cell_size):
+                    with self.assertRaises((TypeError, ValueError)):
+                        run(30, 2, output_dir=output, cell_size=cell_size)
+                    self.assertFalse(output.exists())
+
     def test_active_cell_density_can_be_computed_from_run_output(self):
         with tempfile.TemporaryDirectory() as output:
             with contextlib.redirect_stdout(io.StringIO()):

@@ -37,7 +37,9 @@ Batch input is validated completely before any output is created; rule order is
 preserved and duplicate rule numbers are rejected.
 
 `--rule` accepts 0–255 and `--steps` must be positive. Invalid inputs fail
-before an output file is created or replaced.
+before an output file is created or replaced. The Python `run()` and
+`run_batch()` APIs also validate `cell_size` before creating their output
+directory, even when SVG output is not requested.
 
 To keep generated files elsewhere, pass the keyword-only `output_dir` option:
 

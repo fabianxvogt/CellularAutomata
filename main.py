@@ -160,8 +160,10 @@ def run(
         raise TypeError("no_steps must be a positive integer")
     if no_steps <= 0:
         raise ValueError("no_steps must be a positive integer")
-    if svg:
-        validate_cell_size(cell_size)
+    # Validate the complete public input contract before creating the output
+    # directory, even when SVG output is disabled. This prevents a typo in a
+    # future opt-in flag from being silently accepted by the Python API.
+    validate_cell_size(cell_size)
 
     # Define the initial state, typically a single active cell in the middle
     initial_state = [0] * no_steps * 2

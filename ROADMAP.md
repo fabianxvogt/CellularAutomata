@@ -51,3 +51,5 @@ Rule 30 open-problem project.
   artifacts; existing local files were preserved. [EMPIRICAL]
 - 2026-08-25: added opt-in dependency-free SVG sidecars for single and batch runs;
   text output and metrics remain unchanged unless explicitly requested. [EMPIRICAL]
+- 2026-08-25: aligned single and batch Python API validation for `cell_size`, so
+  invalid optional SVG settings fail before output-directory creation. [EMPIRICAL]
