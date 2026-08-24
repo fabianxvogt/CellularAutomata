@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from main import active_cell_density, render_metrics, run
+from main import active_cell_density, render_metrics, run, validate_rule
 import main
 
 
@@ -85,6 +85,12 @@ class RunValidationTests(unittest.TestCase):
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(set(run(0, 1)), {"000", "001", "010", "011", "100", "101", "110", "111"})
                     run(255, 1)
+
+    def test_rule_validator_accepts_complete_elementary_rule_table(self):
+        self.assertEqual(
+            [validate_rule(rule) for rule in range(256)],
+            list(range(256)),
+        )
 
     def test_rejects_rule_outside_eight_bit_range(self):
         for rule in (-1, 256):

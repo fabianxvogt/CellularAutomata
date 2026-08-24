@@ -16,7 +16,7 @@ Rule 30 open-problem project.
 
 ## Next
 
-- Support all 256 elementary rules explicitly with a rule-number validation table test.
+- [x] Support all 256 elementary rules explicitly with a rule-number validation table test.
 - [x] Add basic metrics per run (density over time, activity) written next to the output.
 - [x] Add dependency-free batch mode for an ordered set of rules at N steps.
 - Clean up stray root files (`test.json`, `output/`) — gitignore artifacts, keep fixtures.
@@ -43,3 +43,5 @@ Rule 30 open-problem project.
   activity over time via `--metrics`; text output and default behavior remain unchanged. [EMPIRICAL]
 - 2026-08-25: added dependency-free batch rendering with complete pre-validation,
   ordered outputs, and optional metrics sidecars. [EMPIRICAL]
+- 2026-08-25: centralized elementary-rule validation for single and batch runs;
+  tests cover every accepted rule number from 0 through 255. [EMPIRICAL]

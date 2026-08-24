@@ -11,6 +11,10 @@ class BatchRunnerTests(unittest.TestCase):
     def test_parse_rules_preserves_order_and_whitespace(self):
         self.assertEqual(batch.parse_rules(" 30, 90,110 "), [30, 90, 110])
 
+    def test_parse_rules_accepts_complete_elementary_rule_table(self):
+        specification = ",".join(str(rule) for rule in range(256))
+        self.assertEqual(batch.parse_rules(specification), list(range(256)))
+
     def test_parse_rules_rejects_empty_invalid_and_duplicate_entries(self):
         for spec in ("", "30,,90", "30,nope", "30,30", "-1,30", "30,256"):
             with self.subTest(spec=spec):

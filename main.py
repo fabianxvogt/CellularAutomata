@@ -5,6 +5,19 @@ import tempfile
 from pathlib import Path
 
 
+MIN_RULE = 0
+MAX_RULE = 255
+
+
+def validate_rule(rule):
+    """Validate and return one elementary Wolfram rule number."""
+    if isinstance(rule, bool) or not isinstance(rule, int):
+        raise TypeError("rule must be an integer from 0 through 255")
+    if not MIN_RULE <= rule <= MAX_RULE:
+        raise ValueError("rule must be an integer from 0 through 255")
+    return rule
+
+
 def _write_output_atomically(output_path, lines):
     """Replace ``output_path`` only after the complete output is written."""
     temporary_path = None
@@ -92,10 +105,7 @@ def run(rule, no_steps=100, *, output_dir=None, metrics=False):
     Validate these public inputs before creating output so invalid requests
     fail without partial files or misleading output.
     """
-    if isinstance(rule, bool) or not isinstance(rule, int):
-        raise TypeError("rule must be an integer from 0 through 255")
-    if not 0 <= rule <= 255:
-        raise ValueError("rule must be an integer from 0 through 255")
+    validate_rule(rule)
     if isinstance(no_steps, bool) or not isinstance(no_steps, int):
         raise TypeError("no_steps must be a positive integer")
     if no_steps <= 0:

@@ -5,17 +5,20 @@ import contextlib
 import io
 from pathlib import Path
 
-from main import run
+from main import validate_rule, run
 
 
 def _validate_rules(rules):
     values = list(rules)
     if not values:
         raise ValueError("rules must contain at least one rule")
-    if any(isinstance(rule, bool) or not isinstance(rule, int) for rule in values):
-        raise TypeError("rules must contain integers from 0 through 255")
-    if any(rule < 0 or rule > 255 for rule in values):
-        raise ValueError("rules must contain integers from 0 through 255")
+    try:
+        for rule in values:
+            validate_rule(rule)
+    except TypeError as exc:
+        raise TypeError("rules must contain integers from 0 through 255") from exc
+    except ValueError as exc:
+        raise ValueError("rules must contain integers from 0 through 255") from exc
     if len(set(values)) != len(values):
         raise ValueError("rules must not contain duplicates")
     return values
