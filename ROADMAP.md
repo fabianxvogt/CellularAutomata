@@ -1,6 +1,6 @@
 # CellularAutomata Roadmap
 
-Small tool that generates 1D elementary cellular automata: `run(rule, steps)` renders a
+Small tool that generates 1D elementary cellular automata: `run(rule, no_steps)` renders a
 rule (e.g. Rule 30 for 100 steps) and writes text output, with configurable output
 directory, atomic writes, and tests. Companion to `toy-projects/GameOfLife` and the
 Rule 30 open-problem project.
