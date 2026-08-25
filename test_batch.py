@@ -71,6 +71,25 @@ class BatchRunnerTests(unittest.TestCase):
                 self.assertTrue(svg_path.is_file())
                 self.assertIn("<svg ", svg_path.read_text(encoding="utf-8"))
 
+    def test_successful_batch_rerun_removes_unrequested_sidecars(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                batch.run_batch(
+                    [30, 90],
+                    2,
+                    output_dir=output,
+                    metrics=True,
+                    svg=True,
+                    metadata=True,
+                )
+                batch.run_batch([30, 90], 3, output_dir=output)
+
+            output_dir = Path(output)
+            self.assertEqual(
+                sorted(path.name for path in output_dir.iterdir()),
+                ["rule_30_output.txt", "rule_90_output.txt"],
+            )
+
     def test_run_batch_rejects_invalid_cell_size_before_first_output(self):
         with tempfile.TemporaryDirectory() as parent:
             output = Path(parent) / "not-created"

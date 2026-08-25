@@ -33,6 +33,10 @@ rule, rendered dimensions, enabled sidecar options, and output filenames. The
 metadata option is recorded alongside the metrics and SVG flags. The default
 text output is unchanged.
 
+A successful rerun in the same output directory removes known metrics, SVG, or
+metadata sidecars that were not requested by the new run, keeping the sidecars
+consistent with the latest text output.
+
 Render several rules in one bounded invocation with the dependency-free batch
 runner:
 

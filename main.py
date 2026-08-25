@@ -196,6 +196,25 @@ def _validate_option_flag(value, name):
     return value
 
 
+def _remove_unrequested_sidecars(
+    output_dir,
+    rule,
+    *,
+    metrics=False,
+    svg=False,
+    metadata=False,
+):
+    """Remove known sidecars not requested by a successful rerun."""
+    sidecars = (
+        (metrics, output_dir / f"rule_{rule}_metrics.json"),
+        (svg, output_dir / f"rule_{rule}_output.svg"),
+        (metadata, output_dir / f"rule_{rule}_metadata.json"),
+    )
+    for requested, sidecar_path in sidecars:
+        if not requested:
+            sidecar_path.unlink(missing_ok=True)
+
+
 def active_cell_density(lines):
     """Return the fraction of rendered cells marked active.
 
@@ -414,6 +433,13 @@ def run(
             sort_keys=True,
         ).splitlines()
         _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
+    _remove_unrequested_sidecars(
+        output_dir,
+        rule,
+        metrics=metrics,
+        svg=svg,
+        metadata=metadata,
+    )
 
     #print(count_dict)
     return count_dict

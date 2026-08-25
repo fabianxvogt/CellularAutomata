@@ -251,6 +251,22 @@ class RunValidationTests(unittest.TestCase):
             self.assertIn('viewBox="0 0 8 4"', svg)
             self.assertFalse((Path(output) / "rule_30_metrics.json").exists())
 
+    def test_successful_rerun_removes_unrequested_sidecars(self):
+        with tempfile.TemporaryDirectory() as output:
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(30, 2, output_dir=output, metrics=True, svg=True, metadata=True)
+                run(30, 3, output_dir=output)
+
+            output_dir = Path(output)
+            self.assertEqual(
+                sorted(path.name for path in output_dir.iterdir()),
+                ["rule_30_output.txt"],
+            )
+            self.assertEqual(
+                len((output_dir / "rule_30_output.txt").read_text(encoding="utf-8").splitlines()),
+                3,
+            )
+
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
