@@ -54,6 +54,7 @@ class BatchRunnerTests(unittest.TestCase):
                 self.assertEqual(metadata["steps"], 2)
                 self.assertFalse(metadata["options"]["metrics"])
                 self.assertFalse(metadata["options"]["svg"])
+                self.assertTrue(metadata["options"]["metadata"])
                 self.assertIsNone(metadata["outputs"]["metrics"])
                 self.assertIsNone(metadata["outputs"]["svg"])
                 self.assertEqual(

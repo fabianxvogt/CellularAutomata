@@ -29,7 +29,8 @@ python3 main.py --rule 30 --steps 100 --output-dir /tmp/cellular-automata-output
 ```
 
 Add `--metadata` for an opt-in `rule_30_metadata.json` sidecar containing the
-rule, rendered dimensions, enabled sidecars, and output filenames. The default
+rule, rendered dimensions, enabled sidecar options, and output filenames. The
+metadata option is recorded alongside the metrics and SVG flags. The default
 text output is unchanged.
 
 Render several rules in one bounded invocation with the dependency-free batch

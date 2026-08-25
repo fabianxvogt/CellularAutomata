@@ -270,6 +270,7 @@ def render_metadata(
             "cell_size": cell_size,
             "metrics": metrics,
             "svg": svg,
+            "metadata": metadata,
         },
         "outputs": {
             "text": f"rule_{rule}_output.txt",

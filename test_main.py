@@ -98,7 +98,12 @@ class RunValidationTests(unittest.TestCase):
                 "rule": 30,
                 "steps": 2,
                 "width": 4,
-                "options": {"cell_size": 2, "metrics": True, "svg": True},
+                "options": {
+                    "cell_size": 2,
+                    "metadata": True,
+                    "metrics": True,
+                    "svg": True,
+                },
                 "outputs": {
                     "text": "rule_30_output.txt",
                     "metrics": "rule_30_metrics.json",
@@ -188,7 +193,12 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(metadata["width"], 4)
             self.assertEqual(
                 metadata["options"],
-                {"cell_size": 4, "metrics": False, "svg": False},
+                {
+                    "cell_size": 4,
+                    "metadata": True,
+                    "metrics": False,
+                    "svg": False,
+                },
             )
             self.assertEqual(metadata["outputs"]["text"], "rule_30_output.txt")
             self.assertIsNone(metadata["outputs"]["metrics"])

@@ -87,3 +87,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   rejecting unintended truthy values before output creation. [EMPIRICAL]
 - 2026-08-25: tightened totalistic binary-state validation to reject float
   lookalikes before bitwise neighborhood evaluation. [EMPIRICAL]
+- 2026-08-25: aligned the elementary metadata `options` object with its
+  `outputs` object by recording the enabled metadata sidecar flag; totalistic
+  history metadata round-trips remain unchanged. [EMPIRICAL]
