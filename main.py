@@ -444,7 +444,6 @@ def run(
         line = line.replace('0', ' ')
         line = line.replace('1', '■')
         line = line.rjust(no_steps, '0')
-        print(line)
         output_lines.append(line)
 
     # Build every requested sidecar before replacing the text output. This
@@ -518,6 +517,11 @@ def run(
             svg=svg,
             metadata=metadata,
         )
+
+    # Treat stdout as part of the requested output: emit rows only after the
+    # text file and every requested sidecar have completed successfully.
+    for line in output_lines:
+        print(line)
 
     #print(count_dict)
     return count_dict

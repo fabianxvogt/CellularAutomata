@@ -118,3 +118,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   serialization before text replacement, so an in-memory sidecar failure
   preserves the existing text and sidecars without changing their schemas.
   [EMPIRICAL]
+- 2026-08-25: moved rendered-row stdout emission behind successful text,
+  requested-sidecar, and stale-sidecar handling, so failed requested-output
+  preparation cannot leak a partial success-looking stream. [EMPIRICAL]

@@ -167,6 +167,13 @@ class RunValidationTests(unittest.TestCase):
             self.assertFalse((Path(output) / "rule_30_metrics.json").exists())
             self.assertFalse((Path(output) / "rule_30_metadata.json").exists())
 
+    def test_successful_run_retains_row_by_row_stdout_contract(self):
+        with tempfile.TemporaryDirectory() as output:
+            captured_stdout = io.StringIO()
+            with contextlib.redirect_stdout(captured_stdout):
+                run(30, 2, output_dir=output)
+            self.assertEqual(captured_stdout.getvalue(), "  ■ \n ■■ \n")
+
     def test_cli_metadata_writes_opt_in_sidecar_without_changing_text_output(self):
         with tempfile.TemporaryDirectory() as output:
             with contextlib.redirect_stdout(io.StringIO()):
@@ -308,11 +315,13 @@ class RunValidationTests(unittest.TestCase):
                     raise OSError("metrics replace failed")
                 return original_replace(source, destination)
 
+            captured_stdout = io.StringIO()
             with patch("main.os.replace", side_effect=fail_metrics_replace):
-                with contextlib.redirect_stdout(io.StringIO()):
+                with contextlib.redirect_stdout(captured_stdout):
                     with self.assertRaises(OSError):
                         run(30, 3, output_dir=output, metrics=True)
 
+            self.assertEqual(captured_stdout.getvalue(), "")
             self.assertEqual(
                 len((output_dir / "rule_30_output.txt").read_text(encoding="utf-8").splitlines()),
                 3,
@@ -339,6 +348,7 @@ class RunValidationTests(unittest.TestCase):
 
             original_dumps = main.json.dumps
             serialization_calls = 0
+            captured_stdout = io.StringIO()
 
             def fail_metadata_serialization(payload, *args, **kwargs):
                 nonlocal serialization_calls
@@ -350,7 +360,7 @@ class RunValidationTests(unittest.TestCase):
             with patch(
                 "main.json.dumps", side_effect=fail_metadata_serialization
             ):
-                with contextlib.redirect_stdout(io.StringIO()):
+                with contextlib.redirect_stdout(captured_stdout):
                     with self.assertRaisesRegex(
                         TypeError, "metadata serialization failed"
                     ):
@@ -363,6 +373,7 @@ class RunValidationTests(unittest.TestCase):
                             metadata=True,
                         )
 
+            self.assertEqual(captured_stdout.getvalue(), "")
             self.assertEqual(serialization_calls, 2)
             self.assertEqual(
                 {
