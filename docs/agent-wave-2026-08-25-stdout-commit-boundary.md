@@ -9,10 +9,12 @@ rows that look like a successful result.
 
 ## Change
 
-`run()` now emits its rendered rows only after the text replacement, every
-requested sidecar replacement, and known stale-sidecar cleanup complete. A
-successful run retains the existing row-for-row stdout contract. A failed run
-does not emit a partial success-looking stream.
+`run()` now emits its rendered rows only after the text replacement and every
+requested sidecar replacement complete. A successful run retains the existing
+row-for-row stdout contract. A failed requested-output preparation does not
+emit a partial success-looking stream. A later stale-sidecar cleanup error is
+reported after the committed primary rows are emitted, because that cleanup
+does not invalidate the requested primary output.
 
 ## Evidence
 

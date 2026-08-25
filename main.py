@@ -508,20 +508,30 @@ def run(
             pass
         raise
     else:
-        # On an otherwise successful run, report cleanup errors instead of
-        # claiming that the sidecar set matches the new request.
-        _remove_unrequested_sidecars(
-            output_dir,
-            rule,
-            metrics=metrics,
-            svg=svg,
-            metadata=metadata,
-        )
+        # The primary text and requested sidecars are committed at this point.
+        # Keep a stale-sidecar cleanup error visible, but defer raising it
+        # until after stdout reports the committed primary output. Otherwise
+        # a successful text replacement can be left on disk with no matching
+        # row stream for the caller.
+        cleanup_error = None
+        try:
+            _remove_unrequested_sidecars(
+                output_dir,
+                rule,
+                metrics=metrics,
+                svg=svg,
+                metadata=metadata,
+            )
+        except OSError as exc:
+            cleanup_error = exc
 
     # Treat stdout as part of the requested output: emit rows only after the
     # text file and every requested sidecar have completed successfully.
     for line in output_lines:
         print(line)
+
+    if cleanup_error is not None:
+        raise cleanup_error
 
     #print(count_dict)
     return count_dict

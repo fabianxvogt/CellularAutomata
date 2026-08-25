@@ -24,3 +24,4 @@ Current evidence and topic notes:
 - [original CLI](agent-wave-2026-08-24-cli.md)
 - [atomic temporary cleanup boundary](agent-wave-2026-08-25-atomic-cleanup-boundary.md)
 - [committed stdout boundary](agent-wave-2026-08-25-stdout-commit-boundary.md)
+- [post-write cleanup/stdout boundary](agent-wave-2026-08-25-post-write-cleanup-stdout.md)

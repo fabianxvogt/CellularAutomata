@@ -444,11 +444,16 @@ class RunValidationTests(unittest.TestCase):
             with patch.object(
                 Path, "unlink", autospec=True, side_effect=fail_svg_unlink
             ):
-                with contextlib.redirect_stdout(io.StringIO()):
+                captured_stdout = io.StringIO()
+                with contextlib.redirect_stdout(captured_stdout):
                     with self.assertRaisesRegex(OSError, "svg cleanup failed"):
                         run(30, 3, output_dir=output)
 
-            self.assertTrue((output_dir / "rule_30_output.txt").exists())
+            output_path = output_dir / "rule_30_output.txt"
+            self.assertTrue(output_path.exists())
+            self.assertEqual(
+                captured_stdout.getvalue(), output_path.read_text(encoding="utf-8")
+            )
             self.assertTrue((output_dir / "rule_30_output.svg").exists())
             self.assertFalse((output_dir / "rule_30_metadata.json").exists())
 
