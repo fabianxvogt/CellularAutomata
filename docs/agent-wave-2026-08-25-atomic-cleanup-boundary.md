@@ -45,6 +45,10 @@ replacement object.
   rejected before output creation and preserved byte-for-byte; a directory at a
   known stale-sidecar path is not recursively removed, and its cleanup error is
   reported after the text output is written.
+- Serialization-preflight probe: the first requested JSON sidecar serialized,
+  the second raised `metadata serialization failed`, and the existing text,
+  SVG, metrics, and metadata files all remained byte-for-byte unchanged; no
+  temporary file or output replacement occurred during the failed preflight.
 - Post-change checks: full suite, compilation, and `git diff --check` passed.
 
 Classification: `INCREMENTAL / EMPIRICAL`.
@@ -58,4 +62,7 @@ transaction. A later run intentionally does not scan for old temp-like names:
 after the original identity is lost, there is no safe way to distinguish a
 failed-run artifact from an unrelated user file. Known sidecars remain
 independently safe to clean because their paths are part of the output
-contract.
+contract. Requested SVG/JSON payloads are now rendered and serialized before
+the text replacement; this prevents an in-memory serialization failure from
+creating a new text file beside older requested sidecars, but it does not make
+the subsequent per-file replacements a multi-file transaction.

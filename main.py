@@ -438,8 +438,6 @@ def run(
         automaton_history.append(new_state)
 
     # Write the automaton's history to a text file with leading zeros
-    output_dir = Path("output") if output_dir is None else Path(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
     output_lines = []
     for state in automaton_history:
         line = ''.join(map(str, state))
@@ -448,32 +446,53 @@ def run(
         line = line.rjust(no_steps, '0')
         print(line)
         output_lines.append(line)
+
+    # Build every requested sidecar before replacing the text output. This
+    # keeps a serialization or rendering failure from leaving a new text file
+    # beside an older requested JSON/SVG sidecar. Individual file writes below
+    # remain atomic; this is only a preflight for deterministic in-memory data.
+    optional_sidecar_lines = {}
+    if svg:
+        optional_sidecar_lines["svg"] = render_svg(
+            output_lines, cell_size=cell_size
+        ).splitlines()
+    if metrics:
+        optional_sidecar_lines["metrics"] = json.dumps(
+            render_metrics(output_lines), indent=2, sort_keys=True
+        ).splitlines()
+    if metadata:
+        optional_sidecar_lines["metadata"] = json.dumps(
+            render_metadata(
+                rule,
+                output_lines,
+                metrics=metrics,
+                svg=svg,
+                cell_size=cell_size,
+                metadata=metadata,
+            ),
+            indent=2,
+            sort_keys=True,
+        ).splitlines()
+
+    output_dir = Path("output") if output_dir is None else Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
     _write_output_atomically(output_dir / f"rule_{rule}_output.txt", output_lines)
     try:
         if svg:
             _write_output_atomically(
                 output_dir / f"rule_{rule}_output.svg",
-                render_svg(output_lines, cell_size=cell_size).splitlines(),
+                optional_sidecar_lines["svg"],
             )
         if metrics:
-            metric_lines = json.dumps(
-                render_metrics(output_lines), indent=2, sort_keys=True
-            ).splitlines()
-            _write_output_atomically(output_dir / f"rule_{rule}_metrics.json", metric_lines)
+            _write_output_atomically(
+                output_dir / f"rule_{rule}_metrics.json",
+                optional_sidecar_lines["metrics"],
+            )
         if metadata:
-            metadata_lines = json.dumps(
-                render_metadata(
-                    rule,
-                    output_lines,
-                    metrics=metrics,
-                    svg=svg,
-                    cell_size=cell_size,
-                    metadata=metadata,
-                ),
-                indent=2,
-                sort_keys=True,
-            ).splitlines()
-            _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
+            _write_output_atomically(
+                output_dir / f"rule_{rule}_metadata.json",
+                optional_sidecar_lines["metadata"],
+            )
     except BaseException:
         # If an optional write fails after text replacement, remove only
         # sidecars that this run did not request. Preserve the write failure

@@ -114,3 +114,7 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   retries: later reruns clean only contract-known stale sidecars and preserve
   both failed-run temp artifacts and unrelated temp-like siblings when their
   original identity is unavailable. [EMPIRICAL]
+- 2026-08-25: preflighted requested SVG/JSON sidecar rendering and
+  serialization before text replacement, so an in-memory sidecar failure
+  preserves the existing text and sidecars without changing their schemas.
+  [EMPIRICAL]

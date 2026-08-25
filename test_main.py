@@ -325,6 +325,54 @@ class RunValidationTests(unittest.TestCase):
             self.assertFalse((output_dir / "rule_30_metadata.json").exists())
             self.assertEqual(list(output_dir.glob(".*.tmp")), [])
 
+    def test_sidecar_serialization_failure_preserves_all_existing_outputs(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            existing = {
+                "rule_30_output.txt": "old output\n",
+                "rule_30_output.svg": "old svg\n",
+                "rule_30_metrics.json": "old metrics\n",
+                "rule_30_metadata.json": "old metadata\n",
+            }
+            for name, content in existing.items():
+                (output_dir / name).write_text(content, encoding="utf-8")
+
+            original_dumps = main.json.dumps
+            serialization_calls = 0
+
+            def fail_metadata_serialization(payload, *args, **kwargs):
+                nonlocal serialization_calls
+                serialization_calls += 1
+                if serialization_calls == 2:
+                    raise TypeError("metadata serialization failed")
+                return original_dumps(payload, *args, **kwargs)
+
+            with patch(
+                "main.json.dumps", side_effect=fail_metadata_serialization
+            ):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaisesRegex(
+                        TypeError, "metadata serialization failed"
+                    ):
+                        run(
+                            30,
+                            3,
+                            output_dir=output_dir,
+                            metrics=True,
+                            svg=True,
+                            metadata=True,
+                        )
+
+            self.assertEqual(serialization_calls, 2)
+            self.assertEqual(
+                {
+                    path.name: path.read_text(encoding="utf-8")
+                    for path in output_dir.iterdir()
+                },
+                existing,
+            )
+            self.assertEqual(list(output_dir.glob(".*.tmp")), [])
+
     def test_sidecar_cleanup_error_preserves_write_failure_and_continues(self):
         with tempfile.TemporaryDirectory() as output:
             output_dir = Path(output)
