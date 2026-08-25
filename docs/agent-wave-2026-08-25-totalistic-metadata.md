@@ -2,7 +2,7 @@
 
 ## Scope
 
-Added the pure `totalistic_metadata(rule, no_steps)` API helper and opt-in CLI
+Added the pure `totalistic_metadata(rule, no_steps=100)` API helper and opt-in CLI
 `--metadata` flag. The JSON-compatible payload records schema version, radius,
 canonical zero-padded six-bit rule string, rule, steps, rendered width, seed
 index, fixed-dead boundary behavior, and the generated history. The default

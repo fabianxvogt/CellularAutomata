@@ -22,8 +22,9 @@ value are unchanged when metrics are not requested.
 - The implementation uses only the Python standard library and the existing
   atomic-write helper.
 
-## Limits and next check
+## Current use
 
 This is an instrumentation contract, not evidence about cellular-automata
-complexity or randomness. A later batch interface can consume the same JSON
-schema after its rule/step bounds are specified.
+complexity or randomness. The current batch runner forwards `metrics=True` (or
+the CLI's `--metrics` flag) to each requested rule, producing the same JSON
+sidecar contract per output.

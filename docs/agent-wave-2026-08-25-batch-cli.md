@@ -2,11 +2,13 @@
 
 ## Change
 
-Added `batch.py`, a dependency-free CLI and `run_batch()` helper for rendering
-an ordered, unique comma-separated rule list. The complete list and step count
-are validated before the first output directory or file is created. Each rule
-keeps the existing `rule_<n>_output.txt` naming contract; `--metrics` forwards
-the existing optional JSON sidecar behavior to every rule.
+Added `batch.py`, a dependency-free CLI for rendering an ordered, unique
+comma-separated rule list and a `run_batch(rules, no_steps=100, *,
+output_dir=None, metrics=False, svg=False, cell_size=4, metadata=False)` helper
+for the corresponding ordered iterable. The complete list and step count are
+validated before the first output directory or file is created. Each rule keeps
+the existing `rule_<n>_output.txt` naming contract; the optional metrics, SVG,
+and run-metadata sidecars are forwarded to every rule.
 
 ## Evidence
 

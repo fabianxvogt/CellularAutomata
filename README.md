@@ -42,11 +42,17 @@ python3 batch.py --rules 30,90,110 --steps 100 --output-dir /tmp/cellular-automa
 Batch input is validated completely before any output is created; rule order is
 preserved and duplicate rule numbers are rejected.
 
+The Python renderers are `run(rule, no_steps=100, *, output_dir=None,
+metrics=False, svg=False, cell_size=4, metadata=False)` and
+`run_batch(rules, no_steps=100, *, output_dir=None, metrics=False, svg=False,
+cell_size=4, metadata=False)`. The batch API accepts an ordered iterable of
+rules; the CLI's `--rules` value is the comma-separated form.
+
 The deferred neighborhood extension is available as a pure radius-2 totalistic
-core. `totalistic_history(rule, no_steps)` accepts rules `0–63`, where bit `n`
+core. `totalistic_history(rule, no_steps=100)` accepts rules `0–63`, where bit `n`
 controls a five-cell neighborhood containing `n` active cells, and returns the
 seeded binary history without writing files. It uses fixed-dead boundaries;
-the existing `run()` output and API are unchanged.
+the existing elementary `run()` default output and behavior are unchanged.
 
 For a dependency-free command-line entry point, print the same history as JSON
 to standard output:
@@ -60,7 +66,8 @@ and does not create or modify files.
 
 Add `--metadata` to wrap the history in a self-describing JSON object containing
 the canonical six-bit rule string, rule encoding, radius, steps, width, seed
-index, and fixed-dead boundary convention. Without this flag, the raw history
+index, and fixed-dead boundary convention. The corresponding Python helper is
+`totalistic_metadata(rule, no_steps=100)`. Without the flag, the raw history
 JSON above is unchanged.
 
 For API consumers, `totalistic_history_from_metadata(payload)` validates a

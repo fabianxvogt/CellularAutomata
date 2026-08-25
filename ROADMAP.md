@@ -1,9 +1,10 @@
 # CellularAutomata Roadmap
 
-Small tool that generates 1D elementary cellular automata: `run(rule, no_steps)` renders a
-rule (e.g. Rule 30 for 100 steps) and writes text output, with configurable output
-directory, atomic writes, and tests. Companion to `toy-projects/GameOfLife` and the
-Rule 30 open-problem project.
+Small tool that generates 1D elementary cellular automata: `run(rule,
+no_steps=100, *, output_dir=None, metrics=False, svg=False, cell_size=4,
+metadata=False)` renders a rule (e.g. Rule 30 for 100 steps) and writes text
+output, with configurable output directory, atomic writes, and tests. Companion
+to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 
 ## Now
 
@@ -63,8 +64,8 @@ Rule 30 open-problem project.
   it preserves the generator's seeded column convention without changing
   default output. [EMPIRICAL]
 - 2026-08-25: added a pure radius-2 totalistic history core with 64 six-bit rules;
-  existing output and APIs remain unchanged, and all rule/neighborhood pairs are
-  exhaustively tested. [EMPIRICAL]
+  existing elementary output and default behavior remain unchanged, and all
+  rule/neighborhood pairs are exhaustively tested. [EMPIRICAL]
 - 2026-08-25: added a standalone dependency-free totalistic CLI that emits the
   existing binary history as JSON on standard output; the elementary CLI and
   default files remain unchanged. [EMPIRICAL]
@@ -77,3 +78,6 @@ Rule 30 open-problem project.
 - 2026-08-25: added schema-v1 totalistic metadata round-trip validation; it
   rejects inconsistent contract fields while tolerating additive fields, and
   leaves raw history JSON unchanged. [EMPIRICAL]
+- 2026-08-25: audited README and AI-owned notes against the current CLI/API
+  signatures; corrected stale claims without changing either metadata schema.
+  [EMPIRICAL]

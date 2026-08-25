@@ -11,7 +11,9 @@ function, so invalid inputs still fail before output mutation.
 - `python3 -m pytest -q` — 13 tests passed.
 - `python3 main.py --rule 30 --steps 2 --output-dir <temporary directory>` —
   produced the expected two-line Rule 30 output.
-- `python3 main.py --help` — lists all three options.
+- `python3 main.py --help` — confirms the three options introduced in this
+  wave; the current parser also exposes `--metrics`, `--svg`, `--metadata`, and
+  `--cell-size`.
 - `git diff --check` — clean.
 
 ## Classification
