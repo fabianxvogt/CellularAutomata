@@ -71,3 +71,6 @@ Rule 30 open-problem project.
 - 2026-08-25: added an opt-in self-describing totalistic metadata envelope via
   the API and CLI; raw history JSON and existing defaults remain unchanged.
   [EMPIRICAL]
+- 2026-08-25: strengthened totalistic metadata with a canonical zero-padded
+  six-bit rule string; raw history JSON remains byte-for-byte unchanged.
+  [EMPIRICAL]

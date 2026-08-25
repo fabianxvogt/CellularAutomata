@@ -37,6 +37,7 @@ class TotalisticCliTests(unittest.TestCase):
         self.assertEqual(payload["schema_version"], 1)
         self.assertEqual(payload["radius"], 2)
         self.assertEqual(payload["rule"], 63)
+        self.assertEqual(payload["rule_bits"], "111111")
         self.assertEqual(payload["steps"], 4)
         self.assertEqual(payload["width"], 8)
         self.assertEqual(payload["seed_index"], 4)

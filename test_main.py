@@ -273,6 +273,7 @@ class RunValidationTests(unittest.TestCase):
                 "schema_version": 1,
                 "radius": 2,
                 "rule": 63,
+                "rule_bits": "111111",
                 "rule_encoding": "bit n = output for n active cells",
                 "steps": 4,
                 "width": 8,
@@ -281,6 +282,9 @@ class RunValidationTests(unittest.TestCase):
             },
         )
         self.assertEqual(payload["history"], totalistic_history(63, 4))
+
+    def test_totalistic_metadata_preserves_leading_rule_bits(self):
+        self.assertEqual(totalistic_metadata(5, 1)["rule_bits"], "000101")
 
     def test_totalistic_helpers_reject_invalid_inputs(self):
         for rule in (-1, 64, True, "30"):

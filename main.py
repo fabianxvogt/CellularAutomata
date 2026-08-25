@@ -86,6 +86,7 @@ def totalistic_metadata(rule, no_steps=100):
         "schema_version": 1,
         "radius": 2,
         "rule": rule,
+        "rule_bits": format(rule, "06b"),
         "rule_encoding": "bit n = output for n active cells",
         "steps": no_steps,
         "width": len(history[0]),
