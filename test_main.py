@@ -457,6 +457,47 @@ class RunValidationTests(unittest.TestCase):
             self.assertTrue((output_dir / "rule_30_output.svg").exists())
             self.assertFalse((output_dir / "rule_30_metadata.json").exists())
 
+    def test_multiple_sidecar_cleanup_errors_are_aggregated_and_protected(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            metrics_dir = output_dir / "rule_30_metrics.json"
+            metrics_dir.mkdir()
+            sentinel = metrics_dir / "preserve.txt"
+            sentinel.write_text("sentinel\n", encoding="utf-8")
+            metadata_path = output_dir / "rule_30_metadata.json"
+            metadata_path.write_text("old metadata\n", encoding="utf-8")
+            original_unlink = Path.unlink
+
+            def fail_metadata_unlink(path, missing_ok=False):
+                if path.name == metadata_path.name:
+                    raise OSError("metadata cleanup failed")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            captured_stdout = io.StringIO()
+            with patch.object(
+                Path, "unlink", autospec=True, side_effect=fail_metadata_unlink
+            ):
+                with contextlib.redirect_stdout(captured_stdout):
+                    with self.assertRaisesRegex(
+                        OSError, "multiple stale sidecar cleanup failures"
+                    ) as raised:
+                        run(30, 3, output_dir=output_dir)
+
+            cleanup_error = raised.exception
+            self.assertEqual(
+                [path.name for path, _ in cleanup_error.failures],
+                [metrics_dir.name, metadata_path.name],
+            )
+            self.assertIsInstance(cleanup_error.failures[0][1], OSError)
+            self.assertEqual(str(cleanup_error.failures[1][1]), "metadata cleanup failed")
+            output_path = output_dir / "rule_30_output.txt"
+            self.assertEqual(
+                captured_stdout.getvalue(), output_path.read_text(encoding="utf-8")
+            )
+            self.assertTrue(metrics_dir.is_dir())
+            self.assertEqual(sentinel.read_text(encoding="utf-8"), "sentinel\n")
+            self.assertEqual(metadata_path.read_text(encoding="utf-8"), "old metadata\n")
+
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):

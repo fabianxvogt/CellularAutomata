@@ -225,6 +225,18 @@ def _validate_option_flag(value, name):
     return value
 
 
+class _SidecarCleanupError(OSError):
+    """Report every known stale-sidecar cleanup failure in one error."""
+
+    def __init__(self, failures):
+        self.failures = tuple(failures)
+        details = "; ".join(
+            f"{path.name}: {type(error).__name__}: {error}"
+            for path, error in self.failures
+        )
+        super().__init__(f"multiple stale sidecar cleanup failures: {details}")
+
+
 def _remove_unrequested_sidecars(
     output_dir,
     rule,
@@ -250,9 +262,11 @@ def _remove_unrequested_sidecars(
             try:
                 sidecar_path.unlink(missing_ok=True)
             except OSError as exc:
-                cleanup_errors.append(exc)
+                cleanup_errors.append((sidecar_path, exc))
     if cleanup_errors:
-        raise cleanup_errors[0]
+        if len(cleanup_errors) == 1:
+            raise cleanup_errors[0][1]
+        raise _SidecarCleanupError(cleanup_errors) from cleanup_errors[0][1]
 
 
 def active_cell_density(lines):

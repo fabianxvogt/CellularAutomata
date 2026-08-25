@@ -25,3 +25,4 @@ Current evidence and topic notes:
 - [atomic temporary cleanup boundary](agent-wave-2026-08-25-atomic-cleanup-boundary.md)
 - [committed stdout boundary](agent-wave-2026-08-25-stdout-commit-boundary.md)
 - [post-write cleanup/stdout boundary](agent-wave-2026-08-25-post-write-cleanup-stdout.md)
+- [stale-sidecar cleanup error aggregation](agent-wave-2026-08-25-cleanup-error-aggregation.md)

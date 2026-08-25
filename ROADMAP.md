@@ -124,3 +124,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: stale-sidecar cleanup errors are now raised after committed
   primary rows are emitted, keeping stdout aligned with the new text output
   while preserving the cleanup failure and stale-file protection. [EMPIRICAL]
+- 2026-08-25: aggregated multiple known stale-sidecar cleanup failures while
+  preserving single-error behavior, bounded cleanup scope, and protected-file
+  contents. [EMPIRICAL]
