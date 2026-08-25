@@ -130,3 +130,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: escaped unusual known sidecar names and cleanup messages in the
   aggregated error report, keeping diagnostics single-line without broadening
   cleanup scope. [EMPIRICAL]
+- 2026-08-25: preserved ordinary single cleanup exceptions while escaping
+  unusual names and messages in unsafe single-error reports; the original
+  error remains available as the cause. [EMPIRICAL]

@@ -446,8 +446,10 @@ class RunValidationTests(unittest.TestCase):
             ):
                 captured_stdout = io.StringIO()
                 with contextlib.redirect_stdout(captured_stdout):
-                    with self.assertRaisesRegex(OSError, "svg cleanup failed"):
+                    with self.assertRaisesRegex(OSError, "svg cleanup failed") as raised:
                         run(30, 3, output_dir=output)
+
+            self.assertIs(type(raised.exception), OSError)
 
             output_path = output_dir / "rule_30_output.txt"
             self.assertTrue(output_path.exists())
@@ -532,6 +534,51 @@ class RunValidationTests(unittest.TestCase):
             self.assertIn(ascii(metrics_path.name), report)
             self.assertIn(ascii(metadata_path.name), report)
             self.assertIn(ascii("cleanup failed\nwith details"), report)
+
+    def test_single_cleanup_report_escapes_unusual_paths_and_messages(self):
+        class NewlineRule(int):
+            def __format__(self, format_spec):
+                if format_spec == "":
+                    return "30\nsidecar"
+                return super().__format__(format_spec)
+
+        with tempfile.TemporaryDirectory() as output:
+            rule = NewlineRule(30)
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(rule, 2, output_dir=output, metrics=True)
+
+            output_dir = Path(output)
+            metrics_path = output_dir / "rule_30\nsidecar_metrics.json"
+            original_unlink = Path.unlink
+
+            def fail_cleanup(path, missing_ok=False):
+                if path == metrics_path:
+                    raise OSError("cleanup failed\nwith details")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            captured_stdout = io.StringIO()
+            with patch.object(
+                Path, "unlink", autospec=True, side_effect=fail_cleanup
+            ):
+                with contextlib.redirect_stdout(captured_stdout):
+                    with self.assertRaises(OSError) as raised:
+                        run(rule, 2, output_dir=output)
+
+            cleanup_error = raised.exception
+            report = str(cleanup_error)
+            self.assertIsInstance(cleanup_error, main._LineSafeSidecarCleanupError)
+            self.assertIsInstance(cleanup_error.__cause__, OSError)
+            self.assertEqual(
+                str(cleanup_error.__cause__), "cleanup failed\nwith details"
+            )
+            self.assertEqual(len(report.splitlines()), 1)
+            self.assertIn(ascii(metrics_path.name), report)
+            self.assertIn(ascii("cleanup failed\nwith details"), report)
+            output_path = output_dir / "rule_30\nsidecar_output.txt"
+            self.assertEqual(
+                captured_stdout.getvalue(), output_path.read_text(encoding="utf-8")
+            )
+            self.assertTrue(metrics_path.exists())
 
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):

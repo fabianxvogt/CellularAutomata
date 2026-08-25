@@ -237,6 +237,18 @@ class _SidecarCleanupError(OSError):
         super().__init__(f"multiple stale sidecar cleanup failures: {details}")
 
 
+class _LineSafeSidecarCleanupError(OSError):
+    """Report one unsafe stale-sidecar failure without leaking control text."""
+
+    def __init__(self, path, error):
+        self.path = path
+        self.error = error
+        details = (
+            f"{ascii(path.name)}: {type(error).__name__}: {ascii(str(error))}"
+        )
+        super().__init__(f"stale sidecar cleanup failure: {details}")
+
+
 def _remove_unrequested_sidecars(
     output_dir,
     rule,
@@ -265,7 +277,13 @@ def _remove_unrequested_sidecars(
                 cleanup_errors.append((sidecar_path, exc))
     if cleanup_errors:
         if len(cleanup_errors) == 1:
-            raise cleanup_errors[0][1]
+            sidecar_path, error = cleanup_errors[0]
+            if (
+                ascii(sidecar_path.name)[1:-1] != sidecar_path.name
+                or ascii(str(error))[1:-1] != str(error)
+            ):
+                raise _LineSafeSidecarCleanupError(sidecar_path, error) from error
+            raise error
         raise _SidecarCleanupError(cleanup_errors) from cleanup_errors[0][1]
 
 

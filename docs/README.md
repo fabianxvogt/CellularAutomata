@@ -26,3 +26,4 @@ Current evidence and topic notes:
 - [committed stdout boundary](agent-wave-2026-08-25-stdout-commit-boundary.md)
 - [post-write cleanup/stdout boundary](agent-wave-2026-08-25-post-write-cleanup-stdout.md)
 - [stale-sidecar cleanup error aggregation](agent-wave-2026-08-25-cleanup-error-aggregation.md)
+- [single stale-sidecar cleanup line safety](agent-wave-2026-08-25-single-cleanup-line-safety.md)
