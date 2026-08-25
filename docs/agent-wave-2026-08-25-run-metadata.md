@@ -22,11 +22,12 @@ with no mismatches.
 
 Known optional sidecars are now treated as part of the latest successful run:
 when a single or batch rerun omits `metrics`, `svg`, or `metadata`, the matching
-old sidecar is removed after the requested outputs have been written. This
-prevents a new text output from being paired with stale auxiliary files. The
-existing per-file temporary-write path still preserves the target file when
-its own write or replacement fails; a multi-file rollback across all sidecars
-and all rules remains outside this minimal correction.
+old sidecar is removed after the text output has been replaced. Cleanup also
+runs if a later requested optional write fails, so omitted sidecars do not
+survive that known partial-failure path. The existing per-file
+temporary-write path still preserves a requested target file when its own
+write or replacement fails; a multi-file rollback across all sidecars and all
+rules remains outside this minimal correction.
 
 ## Verification
 
@@ -35,6 +36,9 @@ and all rules remains outside this minimal correction.
 - `git diff --check`: passed.
 - A temporary CLI probe verified JSON parsing for single and batch metadata
   sidecars and confirmed the existing text output remained unchanged.
+- A failure-path regression verified that a failed metrics replacement preserves
+  its previous metrics file while removing stale, unrequested SVG and metadata
+  sidecars after the text replacement.
 
 ## Classification
 

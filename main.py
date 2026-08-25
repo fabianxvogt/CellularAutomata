@@ -409,37 +409,42 @@ def run(
         print(line)
         output_lines.append(line)
     _write_output_atomically(output_dir / f"rule_{rule}_output.txt", output_lines)
-    if svg:
-        _write_output_atomically(
-            output_dir / f"rule_{rule}_output.svg",
-            render_svg(output_lines, cell_size=cell_size).splitlines(),
+    try:
+        if svg:
+            _write_output_atomically(
+                output_dir / f"rule_{rule}_output.svg",
+                render_svg(output_lines, cell_size=cell_size).splitlines(),
+            )
+        if metrics:
+            metric_lines = json.dumps(
+                render_metrics(output_lines), indent=2, sort_keys=True
+            ).splitlines()
+            _write_output_atomically(output_dir / f"rule_{rule}_metrics.json", metric_lines)
+        if metadata:
+            metadata_lines = json.dumps(
+                render_metadata(
+                    rule,
+                    output_lines,
+                    metrics=metrics,
+                    svg=svg,
+                    cell_size=cell_size,
+                    metadata=metadata,
+                ),
+                indent=2,
+                sort_keys=True,
+            ).splitlines()
+            _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
+    finally:
+        # If an optional write fails after text replacement, remove only
+        # sidecars that this run did not request. Atomic writes preserve any
+        # pre-existing sidecar that was requested but could not be replaced.
+        _remove_unrequested_sidecars(
+            output_dir,
+            rule,
+            metrics=metrics,
+            svg=svg,
+            metadata=metadata,
         )
-    if metrics:
-        metric_lines = json.dumps(
-            render_metrics(output_lines), indent=2, sort_keys=True
-        ).splitlines()
-        _write_output_atomically(output_dir / f"rule_{rule}_metrics.json", metric_lines)
-    if metadata:
-        metadata_lines = json.dumps(
-            render_metadata(
-                rule,
-                output_lines,
-                metrics=metrics,
-                svg=svg,
-                cell_size=cell_size,
-                metadata=metadata,
-            ),
-            indent=2,
-            sort_keys=True,
-        ).splitlines()
-        _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
-    _remove_unrequested_sidecars(
-        output_dir,
-        rule,
-        metrics=metrics,
-        svg=svg,
-        metadata=metadata,
-    )
 
     #print(count_dict)
     return count_dict

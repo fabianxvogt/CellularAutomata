@@ -267,6 +267,42 @@ class RunValidationTests(unittest.TestCase):
                 3,
             )
 
+    def test_sidecar_cleanup_runs_when_later_optional_write_fails(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            (output_dir / "rule_30_metrics.json").write_text(
+                "old metrics\n", encoding="utf-8"
+            )
+            (output_dir / "rule_30_output.svg").write_text(
+                "old svg\n", encoding="utf-8"
+            )
+            (output_dir / "rule_30_metadata.json").write_text(
+                "old metadata\n", encoding="utf-8"
+            )
+            original_replace = main.os.replace
+
+            def fail_metrics_replace(source, destination):
+                if Path(destination).name == "rule_30_metrics.json":
+                    raise OSError("metrics replace failed")
+                return original_replace(source, destination)
+
+            with patch("main.os.replace", side_effect=fail_metrics_replace):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaises(OSError):
+                        run(30, 3, output_dir=output, metrics=True)
+
+            self.assertEqual(
+                len((output_dir / "rule_30_output.txt").read_text(encoding="utf-8").splitlines()),
+                3,
+            )
+            self.assertEqual(
+                (output_dir / "rule_30_metrics.json").read_text(encoding="utf-8"),
+                "old metrics\n",
+            )
+            self.assertFalse((output_dir / "rule_30_output.svg").exists())
+            self.assertFalse((output_dir / "rule_30_metadata.json").exists())
+            self.assertEqual(list(output_dir.glob(".*.tmp")), [])
+
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):

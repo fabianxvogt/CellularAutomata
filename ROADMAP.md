@@ -93,3 +93,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: successful single and batch reruns now remove known optional
   sidecars that were not requested, keeping sidecar files consistent with the
   latest text output. [EMPIRICAL]
+- 2026-08-25: sidecar cleanup also runs after text replacement when a later
+  optional write fails; unrequested sidecars are removed while requested
+  pre-existing files remain protected by atomic replacement. [EMPIRICAL]
