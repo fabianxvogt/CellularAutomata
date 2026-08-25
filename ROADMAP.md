@@ -106,3 +106,7 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: atomic temporary-file cleanup retries the exact generated path
   once after a transient unlink failure, while preserving the primary error and
   leaving persistent failures visible for later handling. [EMPIRICAL]
+- 2026-08-25: bounded temporary-file cleanup now checks device/inode identity
+  before each unlink, so observed pathname reuse cannot make the retry remove
+  a replacement object; unrelated sibling files remain untouched and primary
+  errors stay deterministic. [EMPIRICAL]

@@ -253,15 +253,18 @@ class RunValidationTests(unittest.TestCase):
 
     def test_successful_rerun_removes_unrequested_sidecars(self):
         with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
             with contextlib.redirect_stdout(io.StringIO()):
                 run(30, 2, output_dir=output, metrics=True, svg=True, metadata=True)
+                unrelated = output_dir / "keep.txt"
+                unrelated.write_text("unrelated\n", encoding="utf-8")
                 run(30, 3, output_dir=output)
 
-            output_dir = Path(output)
             self.assertEqual(
                 sorted(path.name for path in output_dir.iterdir()),
-                ["rule_30_output.txt"],
+                ["keep.txt", "rule_30_output.txt"],
             )
+            self.assertEqual(unrelated.read_text(encoding="utf-8"), "unrelated\n")
             self.assertEqual(
                 len((output_dir / "rule_30_output.txt").read_text(encoding="utf-8").splitlines()),
                 3,
@@ -662,6 +665,49 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(
                 list(Path(output).glob(".rule_30_output.txt.*.tmp")), []
             )
+
+    def test_write_failure_does_not_remove_replacement_or_unrelated_file(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            output_path = output_dir / "rule_30_output.txt"
+            output_path.write_text("existing output\n", encoding="utf-8")
+            unrelated = output_dir / "keep.txt"
+            unrelated.write_text("unrelated\n", encoding="utf-8")
+            original_unlink = Path.unlink
+            temporary_cleanup_attempts = 0
+
+            def replace_after_failed_unlink(path, missing_ok=False):
+                nonlocal temporary_cleanup_attempts
+                if path.name.startswith(".rule_30_output.txt.") and path.name.endswith(
+                    ".tmp"
+                ):
+                    temporary_cleanup_attempts += 1
+                    if temporary_cleanup_attempts == 1:
+                        original_unlink(path, missing_ok=missing_ok)
+                        path.write_text("replacement\n", encoding="utf-8")
+                        raise OSError("ambiguous cleanup failure")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch("main.os.fsync", side_effect=OSError("write failed")):
+                with patch.object(
+                    Path,
+                    "unlink",
+                    autospec=True,
+                    side_effect=replace_after_failed_unlink,
+                ):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaisesRegex(OSError, "write failed"):
+                            run(30, 2, output_dir=output_dir)
+
+            self.assertEqual(temporary_cleanup_attempts, 1)
+            replacement_paths = list(output_dir.glob(".rule_30_output.txt.*.tmp"))
+            self.assertEqual(len(replacement_paths), 1)
+            self.assertEqual(
+                replacement_paths[0].read_text(encoding="utf-8"),
+                "replacement\n",
+            )
+            self.assertEqual(unrelated.read_text(encoding="utf-8"), "unrelated\n")
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "existing output\n")
 
 
 if __name__ == "__main__":

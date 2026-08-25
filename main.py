@@ -142,6 +142,7 @@ def totalistic_history_from_metadata(metadata):
 def _write_output_atomically(output_path, lines):
     """Replace ``output_path`` only after the complete output is written."""
     temporary_path = None
+    temporary_identity = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -152,16 +153,35 @@ def _write_output_atomically(output_path, lines):
             delete=False,
         ) as temporary_file:
             temporary_path = Path(temporary_file.name)
+            temporary_stat = os.fstat(temporary_file.fileno())
+            temporary_identity = (temporary_stat.st_dev, temporary_stat.st_ino)
             for line in lines:
                 temporary_file.write(line + "\n")
             temporary_file.flush()
             os.fsync(temporary_file.fileno())
         os.replace(temporary_path, output_path)
     except BaseException:
-        if temporary_path is not None:
+        if temporary_path is not None and temporary_identity is not None:
             for cleanup_attempt in range(2):
                 try:
+                    current_stat = temporary_path.lstat()
+                except FileNotFoundError:
+                    break
+                except OSError:
+                    if cleanup_attempt == 1:
+                        # Preserve the primary write or replacement failure.
+                        # A persistent cleanup failure leaves the uniquely
+                        # named temporary file for a later cleanup pass.
+                        pass
+                    continue
+                if (current_stat.st_dev, current_stat.st_ino) != temporary_identity:
+                    # The generated pathname now names an observed different
+                    # object. Do not remove that replacement on retry.
+                    break
+                try:
                     temporary_path.unlink(missing_ok=True)
+                    break
+                except FileNotFoundError:
                     break
                 except OSError:
                     if cleanup_attempt == 1:
