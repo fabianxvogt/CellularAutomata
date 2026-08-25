@@ -217,7 +217,10 @@ def render_metrics(lines):
     density_over_time = [row.count("■") / width for row in rows]
     activity_over_time = [0.0]
     for previous, current in zip(rows, rows[1:]):
-        changed_cells = sum(left != right for left, right in zip(previous, current))
+        changed_cells = sum(
+            (left == "■") != (right == "■")
+            for left, right in zip(previous, current)
+        )
         activity_over_time.append(changed_cells / width)
 
     return {

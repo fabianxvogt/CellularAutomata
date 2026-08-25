@@ -81,3 +81,5 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: audited README and AI-owned notes against the current CLI/API
   signatures; corrected stale claims without changing either metadata schema.
   [EMPIRICAL]
+- 2026-08-25: aligned metrics activity with the accepted legacy `0` and space
+  inactive markers, so metrics, density, and SVG agree on dead cells. [EMPIRICAL]

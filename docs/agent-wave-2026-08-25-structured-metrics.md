@@ -14,11 +14,17 @@ Activity is the fraction of cells changed from the preceding generation, with
 generation zero defined as `0.0`. Existing text output and the `run()` return
 value are unchanged when metrics are not requested.
 
+The activity calculation uses the logical cell state rather than raw marker
+characters: both a space and the accepted legacy `0` marker mean inactive.
+This keeps activity aligned with density and SVG rendering for older text
+outputs that still contain zero padding.
+
 ## Evidence
 
 - `python3 -m unittest -v`: 18 tests passed.
 - Focused tests cover exact density/activity values, JSON sidecar parsing, and
-  the default no-sidecar behavior.
+  the default no-sidecar behavior, including equivalence of legacy `0` and
+  space inactive markers.
 - The implementation uses only the Python standard library and the existing
   atomic-write helper.
 

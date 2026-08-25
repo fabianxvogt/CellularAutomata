@@ -70,6 +70,19 @@ class RunValidationTests(unittest.TestCase):
             },
         )
 
+    def test_render_metrics_treats_legacy_zero_padding_as_inactive(self):
+        self.assertEqual(
+            render_metrics(["0■", " ■"]),
+            {
+                "activity_over_time": [0.0, 0.0],
+                "density_over_time": [0.5, 0.5],
+                "mean_activity": 0.0,
+                "mean_density": 0.5,
+                "steps": 2,
+                "width": 2,
+            },
+        )
+
     def test_render_metadata_describes_run_and_requested_outputs(self):
         self.assertEqual(
             render_metadata(
