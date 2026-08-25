@@ -27,7 +27,11 @@ runs if a later requested optional write fails, so omitted sidecars do not
 survive that known partial-failure path. The existing per-file
 temporary-write path still preserves a requested target file when its own
 write or replacement fails; a multi-file rollback across all sidecars and all
-rules remains outside this minimal correction.
+rules remains outside this minimal correction. Cleanup attempts all omitted
+sidecars even if one unlink fails. On a successful optional-write phase, the
+first cleanup error is reported rather than claiming a consistent sidecar set;
+when an optional write already failed, cleanup errors do not mask that primary
+failure, while later stale-sidecar cleanup is still attempted.
 
 ## Verification
 
@@ -39,6 +43,9 @@ rules remains outside this minimal correction.
 - A failure-path regression verified that a failed metrics replacement preserves
   its previous metrics file while removing stale, unrequested SVG and metadata
   sidecars after the text replacement.
+- Cleanup-error regressions verified that a stale SVG unlink failure preserves
+  the primary metrics replacement error, still removes the stale metadata file,
+  and is reported when no earlier write failure exists.
 
 ## Classification
 

@@ -204,15 +204,26 @@ def _remove_unrequested_sidecars(
     svg=False,
     metadata=False,
 ):
-    """Remove known sidecars not requested by a successful rerun."""
+    """Remove known sidecars not requested by a successful rerun.
+
+    Attempt every stale sidecar so one cleanup failure does not prevent later
+    stale files from being removed. Raise the first cleanup error after all
+    attempts have completed.
+    """
     sidecars = (
         (metrics, output_dir / f"rule_{rule}_metrics.json"),
         (svg, output_dir / f"rule_{rule}_output.svg"),
         (metadata, output_dir / f"rule_{rule}_metadata.json"),
     )
+    cleanup_errors = []
     for requested, sidecar_path in sidecars:
         if not requested:
-            sidecar_path.unlink(missing_ok=True)
+            try:
+                sidecar_path.unlink(missing_ok=True)
+            except OSError as exc:
+                cleanup_errors.append(exc)
+    if cleanup_errors:
+        raise cleanup_errors[0]
 
 
 def active_cell_density(lines):
@@ -434,10 +445,24 @@ def run(
                 sort_keys=True,
             ).splitlines()
             _write_output_atomically(output_dir / f"rule_{rule}_metadata.json", metadata_lines)
-    finally:
+    except BaseException:
         # If an optional write fails after text replacement, remove only
-        # sidecars that this run did not request. Atomic writes preserve any
-        # pre-existing sidecar that was requested but could not be replaced.
+        # sidecars that this run did not request. Preserve the write failure
+        # even if stale-sidecar cleanup itself encounters an OS error.
+        try:
+            _remove_unrequested_sidecars(
+                output_dir,
+                rule,
+                metrics=metrics,
+                svg=svg,
+                metadata=metadata,
+            )
+        except OSError:
+            pass
+        raise
+    else:
+        # On an otherwise successful run, report cleanup errors instead of
+        # claiming that the sidecar set matches the new request.
         _remove_unrequested_sidecars(
             output_dir,
             rule,

@@ -303,6 +303,74 @@ class RunValidationTests(unittest.TestCase):
             self.assertFalse((output_dir / "rule_30_metadata.json").exists())
             self.assertEqual(list(output_dir.glob(".*.tmp")), [])
 
+    def test_sidecar_cleanup_error_preserves_write_failure_and_continues(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            (output_dir / "rule_30_metrics.json").write_text(
+                "old metrics\n", encoding="utf-8"
+            )
+            (output_dir / "rule_30_output.svg").write_text(
+                "old svg\n", encoding="utf-8"
+            )
+            (output_dir / "rule_30_metadata.json").write_text(
+                "old metadata\n", encoding="utf-8"
+            )
+            original_replace = main.os.replace
+            original_unlink = Path.unlink
+
+            def fail_metrics_replace(source, destination):
+                if Path(destination).name == "rule_30_metrics.json":
+                    raise OSError("metrics replace failed")
+                return original_replace(source, destination)
+
+            def fail_svg_unlink(path, missing_ok=False):
+                if path.name == "rule_30_output.svg":
+                    raise OSError("svg cleanup failed")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch("main.os.replace", side_effect=fail_metrics_replace):
+                with patch.object(
+                    Path, "unlink", autospec=True, side_effect=fail_svg_unlink
+                ):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaisesRegex(OSError, "metrics replace failed"):
+                            run(30, 3, output_dir=output, metrics=True)
+
+            self.assertEqual(
+                (output_dir / "rule_30_metrics.json").read_text(encoding="utf-8"),
+                "old metrics\n",
+            )
+            self.assertTrue((output_dir / "rule_30_output.svg").exists())
+            self.assertFalse((output_dir / "rule_30_metadata.json").exists())
+            self.assertEqual(list(output_dir.glob(".*.tmp")), [])
+
+    def test_successful_rerun_reports_sidecar_cleanup_error(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            (output_dir / "rule_30_output.svg").write_text(
+                "old svg\n", encoding="utf-8"
+            )
+            (output_dir / "rule_30_metadata.json").write_text(
+                "old metadata\n", encoding="utf-8"
+            )
+            original_unlink = Path.unlink
+
+            def fail_svg_unlink(path, missing_ok=False):
+                if path.name == "rule_30_output.svg":
+                    raise OSError("svg cleanup failed")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch.object(
+                Path, "unlink", autospec=True, side_effect=fail_svg_unlink
+            ):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaisesRegex(OSError, "svg cleanup failed"):
+                        run(30, 3, output_dir=output)
+
+            self.assertTrue((output_dir / "rule_30_output.txt").exists())
+            self.assertTrue((output_dir / "rule_30_output.svg").exists())
+            self.assertFalse((output_dir / "rule_30_metadata.json").exists())
+
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
