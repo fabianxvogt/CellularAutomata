@@ -342,7 +342,7 @@ class RunValidationTests(unittest.TestCase):
             with self.subTest(rule=rule):
                 with self.assertRaises((TypeError, ValueError)):
                     validate_totalistic_rule(rule)
-        for state in ([], [0, 2], [True], "010"):
+        for state in ([], [0, 2], [True], [0.0, 1.0, 0.0], "010"):
             with self.subTest(state=state):
                 with self.assertRaises((TypeError, ValueError)):
                     totalistic_step(state, 0)

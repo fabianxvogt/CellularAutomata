@@ -39,7 +39,12 @@ def _validated_binary_state(state):
         raise TypeError("state must be an iterable of binary cell values") from exc
     if not values:
         raise ValueError("state must contain at least one cell")
-    if any(isinstance(cell, bool) or cell not in (0, 1) for cell in values):
+    if any(
+        isinstance(cell, bool)
+        or not isinstance(cell, int)
+        or cell not in (0, 1)
+        for cell in values
+    ):
         raise ValueError("state must contain only binary cell values")
     return values
 

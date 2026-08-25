@@ -17,7 +17,9 @@ contract.
 
 - Tests cover every one of the 64 totalistic rules against all 32 possible
   five-cell neighborhoods (`2,048` rule/neighborhood cases).
-- Seeded history and invalid-input behavior are covered separately.
+- Seeded history and invalid-input behavior are covered separately; binary
+  states reject booleans and numeric lookalikes such as `0.0`/`1.0` before
+  neighborhood arithmetic.
 - Full suite, syntax checks, and whitespace checks pass.
 
 ## Classification

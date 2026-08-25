@@ -85,3 +85,5 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   inactive markers, so metrics, density, and SVG agree on dead cells. [EMPIRICAL]
 - 2026-08-25: require boolean sidecar flags in the Python single and batch APIs,
   rejecting unintended truthy values before output creation. [EMPIRICAL]
+- 2026-08-25: tightened totalistic binary-state validation to reject float
+  lookalikes before bitwise neighborhood evaluation. [EMPIRICAL]
