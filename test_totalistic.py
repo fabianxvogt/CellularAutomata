@@ -3,6 +3,7 @@ import io
 import json
 import unittest
 
+from main import totalistic_history_from_metadata
 import totalistic
 
 
@@ -51,6 +52,10 @@ class TotalisticCliTests(unittest.TestCase):
                 [0, 0, 1, 1, 1, 1, 0, 0],
                 [0, 0, 1, 1, 1, 1, 0, 0],
             ],
+        )
+        self.assertEqual(
+            totalistic_history_from_metadata(payload),
+            payload["history"],
         )
 
     def test_cli_rejects_invalid_totalistic_inputs_without_stdout(self):

@@ -74,3 +74,6 @@ Rule 30 open-problem project.
 - 2026-08-25: strengthened totalistic metadata with a canonical zero-padded
   six-bit rule string; raw history JSON remains byte-for-byte unchanged.
   [EMPIRICAL]
+- 2026-08-25: added schema-v1 totalistic metadata round-trip validation; it
+  rejects inconsistent contract fields while tolerating additive fields, and
+  leaves raw history JSON unchanged. [EMPIRICAL]

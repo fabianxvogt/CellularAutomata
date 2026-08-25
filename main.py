@@ -2,6 +2,7 @@ import argparse
 import json
 import os
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
 
 
@@ -94,6 +95,43 @@ def totalistic_metadata(rule, no_steps=100):
         "boundary": "fixed-dead",
         "history": history,
     }
+
+
+def totalistic_history_from_metadata(metadata):
+    """Validate and reproduce a schema-v1 totalistic metadata envelope."""
+    if not isinstance(metadata, Mapping):
+        raise TypeError("metadata must be a mapping")
+    if (
+        type(metadata.get("schema_version")) is not int
+        or metadata.get("schema_version") != 1
+    ):
+        raise ValueError("metadata schema_version must be 1")
+    if type(metadata.get("radius")) is not int or metadata.get("radius") != 2:
+        raise ValueError("metadata radius must be 2")
+
+    rule = validate_totalistic_rule(metadata.get("rule"))
+    if metadata.get("rule_bits") != format(rule, "06b"):
+        raise ValueError("metadata rule_bits does not match rule")
+    if metadata.get("rule_encoding") != "bit n = output for n active cells":
+        raise ValueError("metadata rule_encoding is not supported")
+    if metadata.get("boundary") != "fixed-dead":
+        raise ValueError("metadata boundary must be fixed-dead")
+
+    steps = metadata.get("steps")
+    history = totalistic_history(rule, steps)
+    if (
+        type(metadata.get("width")) is not int
+        or metadata.get("width") != len(history[0])
+    ):
+        raise ValueError("metadata width does not match history")
+    if (
+        type(metadata.get("seed_index")) is not int
+        or metadata.get("seed_index") != steps
+    ):
+        raise ValueError("metadata seed_index does not match seeded history")
+    if metadata.get("history") != history:
+        raise ValueError("metadata history does not match its rule and steps")
+    return history
 
 
 def _write_output_atomically(output_path, lines):

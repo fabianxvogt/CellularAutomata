@@ -63,6 +63,11 @@ the canonical six-bit rule string, rule encoding, radius, steps, width, seed
 index, and fixed-dead boundary convention. Without this flag, the raw history
 JSON above is unchanged.
 
+For API consumers, `totalistic_history_from_metadata(payload)` validates a
+schema-v1 envelope and reproduces its history. It checks the declared rule,
+dimensions, seed, boundary, encoding, and stored history; unknown extra fields
+are allowed for forward-compatible readers.
+
 `--rule` accepts 0–255 and `--steps` must be positive. Invalid inputs fail
 before an output file is created or replaced. The Python `run()` and
 `run_batch()` APIs also validate `cell_size` before creating their output

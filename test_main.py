@@ -17,6 +17,7 @@ from main import (
     run,
     totalistic_metadata,
     totalistic_history,
+    totalistic_history_from_metadata,
     totalistic_step,
     validate_rule,
     validate_totalistic_rule,
@@ -285,6 +286,33 @@ class RunValidationTests(unittest.TestCase):
 
     def test_totalistic_metadata_preserves_leading_rule_bits(self):
         self.assertEqual(totalistic_metadata(5, 1)["rule_bits"], "000101")
+
+    def test_totalistic_metadata_round_trips_and_rejects_inconsistent_fields(self):
+        payload = json.loads(json.dumps(totalistic_metadata(5, 4)))
+        payload["producer"] = "compatibility-test"
+        self.assertEqual(
+            totalistic_history_from_metadata(payload),
+            totalistic_history(5, 4),
+        )
+
+        for field, value in (
+            ("rule_bits", "000100"),
+            ("width", 9),
+            ("seed_index", 3),
+            ("history", []),
+        ):
+            with self.subTest(field=field):
+                inconsistent = dict(payload)
+                inconsistent[field] = value
+                with self.assertRaises(ValueError):
+                    totalistic_history_from_metadata(inconsistent)
+
+        for schema_version in (2, 1.0, True):
+            with self.subTest(schema_version=schema_version):
+                with self.assertRaises(ValueError):
+                    totalistic_history_from_metadata(
+                        {**payload, "schema_version": schema_version}
+                    )
 
     def test_totalistic_helpers_reject_invalid_inputs(self):
         for rule in (-1, 64, True, "30"):
