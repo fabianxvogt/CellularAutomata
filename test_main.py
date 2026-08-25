@@ -267,6 +267,25 @@ class RunValidationTests(unittest.TestCase):
                 3,
             )
 
+    def test_sidecar_cleanup_does_not_recursively_remove_directory(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            sidecar_dir = output_dir / "rule_30_output.svg"
+            sidecar_dir.mkdir()
+            (sidecar_dir / "preserve.txt").write_text(
+                "sentinel\n", encoding="utf-8"
+            )
+            with self.assertRaises(OSError):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    run(30, 2, output_dir=output_dir)
+
+            self.assertTrue((output_dir / "rule_30_output.txt").is_file())
+            self.assertTrue(sidecar_dir.is_dir())
+            self.assertEqual(
+                (sidecar_dir / "preserve.txt").read_text(encoding="utf-8"),
+                "sentinel\n",
+            )
+
     def test_sidecar_cleanup_runs_when_later_optional_write_fails(self):
         with tempfile.TemporaryDirectory() as output:
             output_dir = Path(output)
@@ -542,6 +561,16 @@ class RunValidationTests(unittest.TestCase):
                 ["  ■ ", " ■■ "],
             )
 
+    def test_output_dir_file_is_preserved_before_output_creation(self):
+        with tempfile.TemporaryDirectory() as parent:
+            output = Path(parent) / "not-a-directory"
+            output.write_text("sentinel\n", encoding="utf-8")
+            with self.assertRaises(OSError):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    run(30, 2, output_dir=output)
+            self.assertEqual(output.read_text(encoding="utf-8"), "sentinel\n")
+            self.assertEqual(list(Path(parent).glob(".*.tmp")), [])
+
     def test_output_dir_is_keyword_only(self):
         with self.assertRaises(TypeError):
             run(30, 1, tempfile.mkdtemp())
@@ -598,6 +627,40 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(output_path.read_text(encoding="utf-8"), original)
             self.assertEqual(
                 len(list(Path(output).glob(".rule_30_output.txt.*.tmp"))), 1
+            )
+
+    def test_write_failure_retries_transient_temporary_cleanup(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_path = Path(output) / "rule_30_output.txt"
+            output_path.write_text("existing output\n", encoding="utf-8")
+            original_unlink = Path.unlink
+            temporary_cleanup_attempts = 0
+
+            def fail_temporary_unlink_once(path, missing_ok=False):
+                nonlocal temporary_cleanup_attempts
+                if path.name.startswith(".rule_30_output.txt.") and path.name.endswith(
+                    ".tmp"
+                ):
+                    temporary_cleanup_attempts += 1
+                    if temporary_cleanup_attempts == 1:
+                        raise OSError("transient cleanup failure")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch("main.os.fsync", side_effect=OSError("write failed")):
+                with patch.object(
+                    Path,
+                    "unlink",
+                    autospec=True,
+                    side_effect=fail_temporary_unlink_once,
+                ):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaisesRegex(OSError, "write failed"):
+                            run(30, 2, output_dir=output)
+
+            self.assertEqual(temporary_cleanup_attempts, 2)
+            self.assertEqual(output_path.read_text(encoding="utf-8"), "existing output\n")
+            self.assertEqual(
+                list(Path(output).glob(".rule_30_output.txt.*.tmp")), []
             )
 
 

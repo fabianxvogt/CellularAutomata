@@ -159,13 +159,16 @@ def _write_output_atomically(output_path, lines):
         os.replace(temporary_path, output_path)
     except BaseException:
         if temporary_path is not None:
-            try:
-                temporary_path.unlink(missing_ok=True)
-            except OSError:
-                # Preserve the primary write or replacement failure. A
-                # cleanup failure leaves the uniquely named temporary file
-                # for the caller or a later cleanup pass to handle.
-                pass
+            for cleanup_attempt in range(2):
+                try:
+                    temporary_path.unlink(missing_ok=True)
+                    break
+                except OSError:
+                    if cleanup_attempt == 1:
+                        # Preserve the primary write or replacement failure.
+                        # A persistent cleanup failure leaves the uniquely
+                        # named temporary file for a later cleanup pass.
+                        pass
         raise
 
 
