@@ -68,10 +68,12 @@ schema-v1 envelope and reproduces its history. It checks the declared rule,
 dimensions, seed, boundary, encoding, and stored history; unknown extra fields
 are allowed for forward-compatible readers.
 
-`--rule` accepts 0–255 and `--steps` must be positive. Invalid inputs fail
-before an output file is created or replaced. The Python `run()` and
-`run_batch()` APIs also validate `cell_size` before creating their output
-directory, even when SVG output is not requested.
+`main.py` accepts `--rule` values `0–255`, `batch.py` accepts ordered `--rules`
+in the same range, and `totalistic.py` accepts `--rule` values `0–63`. Step
+counts must be positive. Invalid elementary inputs fail before an output file
+is created or replaced; the totalistic CLI writes only to standard output. The
+Python `run()` and `run_batch()` APIs also validate `cell_size` before creating
+their output directory, even when SVG output is not requested.
 
 To keep generated files elsewhere, pass the keyword-only `output_dir` option:
 
