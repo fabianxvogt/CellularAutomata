@@ -127,3 +127,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: aggregated multiple known stale-sidecar cleanup failures while
   preserving single-error behavior, bounded cleanup scope, and protected-file
   contents. [EMPIRICAL]
+- 2026-08-25: escaped unusual known sidecar names and cleanup messages in the
+  aggregated error report, keeping diagnostics single-line without broadening
+  cleanup scope. [EMPIRICAL]

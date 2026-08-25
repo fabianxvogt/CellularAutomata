@@ -231,7 +231,7 @@ class _SidecarCleanupError(OSError):
     def __init__(self, failures):
         self.failures = tuple(failures)
         details = "; ".join(
-            f"{path.name}: {type(error).__name__}: {error}"
+            f"{ascii(path.name)}: {type(error).__name__}: {ascii(str(error))}"
             for path, error in self.failures
         )
         super().__init__(f"multiple stale sidecar cleanup failures: {details}")

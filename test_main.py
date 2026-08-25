@@ -498,6 +498,41 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(sentinel.read_text(encoding="utf-8"), "sentinel\n")
             self.assertEqual(metadata_path.read_text(encoding="utf-8"), "old metadata\n")
 
+    def test_aggregated_cleanup_report_escapes_unusual_paths_and_messages(self):
+        class NewlineRule(int):
+            def __format__(self, format_spec):
+                if format_spec == "":
+                    return "30\nsidecar"
+                return super().__format__(format_spec)
+
+        with tempfile.TemporaryDirectory() as output:
+            rule = NewlineRule(30)
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(rule, 2, output_dir=output, metrics=True, metadata=True)
+
+            output_dir = Path(output)
+            metrics_path = output_dir / "rule_30\nsidecar_metrics.json"
+            metadata_path = output_dir / "rule_30\nsidecar_metadata.json"
+            original_unlink = Path.unlink
+
+            def fail_cleanup(path, missing_ok=False):
+                if path in {metrics_path, metadata_path}:
+                    raise OSError("cleanup failed\nwith details")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch.object(
+                Path, "unlink", autospec=True, side_effect=fail_cleanup
+            ):
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaises(OSError) as raised:
+                        run(rule, 2, output_dir=output)
+
+            report = str(raised.exception)
+            self.assertEqual(len(report.splitlines()), 1)
+            self.assertIn(ascii(metrics_path.name), report)
+            self.assertIn(ascii(metadata_path.name), report)
+            self.assertIn(ascii("cleanup failed\nwith details"), report)
+
     def test_cli_rejects_cell_size_without_svg(self):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):

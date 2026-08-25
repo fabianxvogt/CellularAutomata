@@ -14,16 +14,21 @@ failure was not reported.
 Single cleanup failures retain their original exception type and message. When
 multiple known sidecars fail, the helper now raises a private `OSError`
 subclass containing each `(path, error)` pair and a deterministic summary. The
-helper still attempts every known sidecar, removes no directories recursively,
-and leaves each failed or protected entry in place. Optional-write failures
-continue to preserve their primary write error because cleanup errors remain
-secondary in that path.
+summary uses escaped sidecar names and error text, so control characters in an
+unusual known path or OS message cannot turn one report into multiple lines.
+The helper still attempts every known sidecar, removes no directories
+recursively, and leaves each failed or protected entry in place. Optional-write
+failures continue to preserve their primary write error because cleanup errors
+remain secondary in that path.
 
 ## Evidence
 
 - Failure injection: a protected `rule_30_metrics.json` directory plus a
   separate metadata unlink failure produced one aggregated error containing
   both sidecar paths and both underlying exceptions.
+- An accepted integer-subclass rule producing a newline in the known sidecar
+  names, together with a newline in both injected OS messages, produced a
+  single-line report containing escaped, actionable names and messages.
 - The committed text output was emitted unchanged; the protected directory,
   sentinel file, and metadata file remained byte-for-byte intact.
 - `python3 -m unittest discover -s . -p 'test*.py' -q` — full suite passed.
