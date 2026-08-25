@@ -22,3 +22,4 @@ Current evidence and topic notes:
 - [self-describing totalistic metadata](agent-wave-2026-08-25-totalistic-metadata.md)
 - [metrics helper](agent-wave-2026-08-25-metrics.md)
 - [original CLI](agent-wave-2026-08-24-cli.md)
+- [atomic temporary cleanup boundary](agent-wave-2026-08-25-atomic-cleanup-boundary.md)

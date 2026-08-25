@@ -573,6 +573,33 @@ class RunValidationTests(unittest.TestCase):
             self.assertEqual(list(Path(output).glob(".rule_30_output.txt.*.tmp")), [])
             self.assertEqual(list(Path(output).iterdir()), [output_path])
 
+    def test_write_failure_preserves_primary_error_when_cleanup_fails(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_path = Path(output) / "rule_30_output.txt"
+            original = "existing output\n"
+            output_path.write_text(original, encoding="utf-8")
+            original_unlink = Path.unlink
+
+            def fail_temporary_unlink(path, missing_ok=False):
+                if path.name.startswith(".rule_30_output.txt.") and path.name.endswith(
+                    ".tmp"
+                ):
+                    raise OSError("temporary cleanup failed")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch("main.os.fsync", side_effect=OSError("write failed")):
+                with patch.object(
+                    Path, "unlink", autospec=True, side_effect=fail_temporary_unlink
+                ):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaisesRegex(OSError, "write failed"):
+                            run(30, 2, output_dir=output)
+
+            self.assertEqual(output_path.read_text(encoding="utf-8"), original)
+            self.assertEqual(
+                len(list(Path(output).glob(".rule_30_output.txt.*.tmp"))), 1
+            )
+
 
 if __name__ == "__main__":
     unittest.main()

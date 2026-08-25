@@ -99,3 +99,7 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: sidecar cleanup attempts every stale optional file, preserves a
   primary optional-write error when cleanup also fails, and reports cleanup
   errors after otherwise successful runs. [EMPIRICAL]
+- 2026-08-25: atomic temporary-file cleanup now preserves the primary write or
+  replacement error if secondary cleanup fails; the bounded failure behavior
+  is documented without changing sidecar schemas or transaction semantics.
+  [EMPIRICAL]
