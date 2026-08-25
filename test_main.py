@@ -449,7 +449,11 @@ class RunValidationTests(unittest.TestCase):
                     with self.assertRaisesRegex(OSError, "svg cleanup failed") as raised:
                         run(30, 3, output_dir=output)
 
-            self.assertIs(type(raised.exception), OSError)
+            cleanup_error = raised.exception
+            self.assertIs(type(cleanup_error), OSError)
+            self.assertIsNone(cleanup_error.__cause__)
+            self.assertIsNone(cleanup_error.__context__)
+            self.assertEqual(str(cleanup_error), "svg cleanup failed")
 
             output_path = output_dir / "rule_30_output.txt"
             self.assertTrue(output_path.exists())
@@ -486,6 +490,10 @@ class RunValidationTests(unittest.TestCase):
                         run(30, 3, output_dir=output_dir)
 
             cleanup_error = raised.exception
+            self.assertIs(type(cleanup_error), main._SidecarCleanupError)
+            self.assertIs(cleanup_error.__cause__, cleanup_error.failures[0][1])
+            self.assertIsNone(cleanup_error.__context__)
+            self.assertEqual(len(str(cleanup_error).splitlines()), 1)
             self.assertEqual(
                 [path.name for path, _ in cleanup_error.failures],
                 [metrics_dir.name, metadata_path.name],
@@ -566,8 +574,9 @@ class RunValidationTests(unittest.TestCase):
 
             cleanup_error = raised.exception
             report = str(cleanup_error)
-            self.assertIsInstance(cleanup_error, main._LineSafeSidecarCleanupError)
+            self.assertIs(type(cleanup_error), main._LineSafeSidecarCleanupError)
             self.assertIsInstance(cleanup_error.__cause__, OSError)
+            self.assertIsNone(cleanup_error.__context__)
             self.assertEqual(
                 str(cleanup_error.__cause__), "cleanup failed\nwith details"
             )

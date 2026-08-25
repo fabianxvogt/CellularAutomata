@@ -133,3 +133,6 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
 - 2026-08-25: preserved ordinary single cleanup exceptions while escaping
   unusual names and messages in unsafe single-error reports; the original
   error remains available as the cause. [EMPIRICAL]
+- 2026-08-25: audited single and aggregated stale-sidecar exception types,
+  causes, messages, and stdout/file consistency; no additional runtime defect
+  was reproduced, so only regression and evidence coverage changed. [EMPIRICAL]
