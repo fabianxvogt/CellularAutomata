@@ -36,6 +36,11 @@ replacement object.
   retry; the replacement file and an unrelated sibling were preserved, the
   primary `write failed` error remained deterministic, and no second unlink was
   attempted.
+- Persistent-temp follow-up: after both exact-path cleanup attempts were
+  forced to fail, a later successful rerun removed all three known stale
+  sidecars but preserved the persistent temp file byte-for-byte and preserved a
+  user-managed temp-like sibling. The later run's own temporary file was still
+  replaced and removed normally.
 - Output-directory probes: an existing regular file used as `output_dir` is
   rejected before output creation and preserved byte-for-byte; a directory at a
   known stale-sidecar path is not recursively removed, and its cleanup error is
@@ -49,4 +54,8 @@ scan or delete unrelated directory entries, make multi-file sidecar updates
 transactional, or establish automatic recovery when the filesystem refuses
 both cleanup attempts. The identity check narrows pathname-reuse risk but does
 not turn a check followed by unlink into a cross-filesystem compare-and-delete
-transaction.
+transaction. A later run intentionally does not scan for old temp-like names:
+after the original identity is lost, there is no safe way to distinguish a
+failed-run artifact from an unrelated user file. Known sidecars remain
+independently safe to clean because their paths are part of the output
+contract.

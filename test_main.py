@@ -632,6 +632,62 @@ class RunValidationTests(unittest.TestCase):
                 len(list(Path(output).glob(".rule_30_output.txt.*.tmp"))), 1
             )
 
+    def test_later_rerun_preserves_persistent_temp_and_cleans_only_known_sidecars(self):
+        with tempfile.TemporaryDirectory() as output:
+            output_dir = Path(output)
+            output_path = output_dir / "rule_30_output.txt"
+            output_path.write_text("existing output\n", encoding="utf-8")
+            original_unlink = Path.unlink
+
+            def fail_temporary_unlink(path, missing_ok=False):
+                if path.name.startswith(".rule_30_output.txt.") and path.name.endswith(
+                    ".tmp"
+                ):
+                    raise OSError("persistent temporary cleanup failure")
+                return original_unlink(path, missing_ok=missing_ok)
+
+            with patch("main.os.fsync", side_effect=OSError("write failed")):
+                with patch.object(
+                    Path, "unlink", autospec=True, side_effect=fail_temporary_unlink
+                ):
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with self.assertRaisesRegex(OSError, "write failed"):
+                            run(30, 2, output_dir=output_dir)
+
+            persistent_paths = list(output_dir.glob(".rule_30_output.txt.*.tmp"))
+            self.assertEqual(len(persistent_paths), 1)
+            persistent_path = persistent_paths[0]
+            persistent_bytes = persistent_path.read_bytes()
+
+            for sidecar_name in (
+                "rule_30_metrics.json",
+                "rule_30_output.svg",
+                "rule_30_metadata.json",
+            ):
+                (output_dir / sidecar_name).write_text(
+                    f"stale {sidecar_name}\n", encoding="utf-8"
+                )
+            unrelated_temp = output_dir / ".rule_30_output.txt.user.tmp"
+            unrelated_temp.write_text("user-managed\n", encoding="utf-8")
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                run(30, 3, output_dir=output_dir)
+
+            self.assertEqual(persistent_path.read_bytes(), persistent_bytes)
+            self.assertEqual(unrelated_temp.read_text(encoding="utf-8"), "user-managed\n")
+            self.assertEqual(
+                len(list(output_dir.glob(".rule_30_output.txt.*.tmp"))), 2
+            )
+            self.assertEqual(
+                len(output_path.read_text(encoding="utf-8").splitlines()), 3
+            )
+            for sidecar_name in (
+                "rule_30_metrics.json",
+                "rule_30_output.svg",
+                "rule_30_metadata.json",
+            ):
+                self.assertFalse((output_dir / sidecar_name).exists())
+
     def test_write_failure_retries_transient_temporary_cleanup(self):
         with tempfile.TemporaryDirectory() as output:
             output_path = Path(output) / "rule_30_output.txt"

@@ -110,3 +110,7 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   before each unlink, so observed pathname reuse cannot make the retry remove
   a replacement object; unrelated sibling files remain untouched and primary
   errors stay deterministic. [EMPIRICAL]
+- 2026-08-25: verified the persistent-temp boundary after identity-guarded
+  retries: later reruns clean only contract-known stale sidecars and preserve
+  both failed-run temp artifacts and unrelated temp-like siblings when their
+  original identity is unavailable. [EMPIRICAL]
