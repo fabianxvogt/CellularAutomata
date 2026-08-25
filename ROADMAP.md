@@ -83,3 +83,5 @@ to `toy-projects/GameOfLife` and the Rule 30 open-problem project.
   [EMPIRICAL]
 - 2026-08-25: aligned metrics activity with the accepted legacy `0` and space
   inactive markers, so metrics, density, and SVG agree on dead cells. [EMPIRICAL]
+- 2026-08-25: require boolean sidecar flags in the Python single and batch APIs,
+  rejecting unintended truthy values before output creation. [EMPIRICAL]

@@ -79,6 +79,18 @@ class BatchRunnerTests(unittest.TestCase):
                         batch.run_batch([30, 90], 2, output_dir=output, cell_size=cell_size)
                     self.assertFalse(output.exists())
 
+    def test_run_batch_rejects_non_boolean_sidecar_options_before_first_output(self):
+        with tempfile.TemporaryDirectory() as parent:
+            output = Path(parent) / "not-created"
+            invalid_options = (("metrics", 1), ("svg", "false"), ("metadata", None))
+            for option, value in invalid_options:
+                with self.subTest(option=option, value=value):
+                    with self.assertRaises(TypeError):
+                        batch.run_batch(
+                            [30, 90], 2, output_dir=output, **{option: value}
+                        )
+                    self.assertFalse(output.exists())
+
     def test_cli_reports_one_summary_for_a_batch(self):
         with tempfile.TemporaryDirectory() as output:
             captured = io.StringIO()

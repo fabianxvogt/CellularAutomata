@@ -184,6 +184,13 @@ def validate_cell_size(cell_size):
     return cell_size
 
 
+def _validate_option_flag(value, name):
+    """Validate a boolean sidecar option before any output is created."""
+    if not isinstance(value, bool):
+        raise TypeError(f"{name} must be a boolean")
+    return value
+
+
 def active_cell_density(lines):
     """Return the fraction of rendered cells marked active.
 
@@ -245,6 +252,9 @@ def render_metadata(
     """Return dependency-free metadata describing one rendered run."""
     rule = validate_rule(rule)
     rows, width = _validated_rows(lines)
+    metrics = _validate_option_flag(metrics, "metrics")
+    svg = _validate_option_flag(svg, "svg")
+    metadata = _validate_option_flag(metadata, "metadata")
     cell_size = validate_cell_size(cell_size)
     return {
         "schema_version": 1,
@@ -253,8 +263,8 @@ def render_metadata(
         "width": width,
         "options": {
             "cell_size": cell_size,
-            "metrics": bool(metrics),
-            "svg": bool(svg),
+            "metrics": metrics,
+            "svg": svg,
         },
         "outputs": {
             "text": f"rule_{rule}_output.txt",
@@ -327,6 +337,9 @@ def run(
     # Validate the complete public input contract before creating the output
     # directory, even when SVG output is disabled. This prevents a typo in a
     # future opt-in flag from being silently accepted by the Python API.
+    metrics = _validate_option_flag(metrics, "metrics")
+    svg = _validate_option_flag(svg, "svg")
+    metadata = _validate_option_flag(metadata, "metadata")
     validate_cell_size(cell_size)
 
     # Define the initial state, typically a single active cell in the middle

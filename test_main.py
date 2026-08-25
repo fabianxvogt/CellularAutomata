@@ -132,6 +132,16 @@ class RunValidationTests(unittest.TestCase):
                         run(30, 2, output_dir=output, cell_size=cell_size)
                     self.assertFalse(output.exists())
 
+    def test_run_rejects_non_boolean_sidecar_options_before_creating_output(self):
+        with tempfile.TemporaryDirectory() as parent:
+            output = Path(parent) / "not-created"
+            invalid_options = (("metrics", 1), ("svg", "false"), ("metadata", None))
+            for option, value in invalid_options:
+                with self.subTest(option=option, value=value):
+                    with self.assertRaises(TypeError):
+                        run(30, 2, output_dir=output, **{option: value})
+                    self.assertFalse(output.exists())
+
     def test_active_cell_density_can_be_computed_from_run_output(self):
         with tempfile.TemporaryDirectory() as output:
             with contextlib.redirect_stdout(io.StringIO()):

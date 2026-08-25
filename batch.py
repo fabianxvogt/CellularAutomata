@@ -5,7 +5,13 @@ import contextlib
 import io
 from pathlib import Path
 
-from main import DEFAULT_SVG_CELL_SIZE, run, validate_cell_size, validate_rule
+from main import (
+    DEFAULT_SVG_CELL_SIZE,
+    _validate_option_flag,
+    run,
+    validate_cell_size,
+    validate_rule,
+)
 
 
 def _validate_rules(rules):
@@ -65,8 +71,11 @@ def run_batch(
     """
     values = _validate_rules(rules)
     _validate_steps(no_steps)
-    # Keep batch validation aligned with ``run`` so invalid optional SVG
+    # Keep batch validation aligned with ``run`` so invalid optional sidecar
     # settings fail before the first rule can create an output file.
+    metrics = _validate_option_flag(metrics, "metrics")
+    svg = _validate_option_flag(svg, "svg")
+    metadata = _validate_option_flag(metadata, "metadata")
     validate_cell_size(cell_size)
     results = {}
     for rule in values:

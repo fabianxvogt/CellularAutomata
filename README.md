@@ -79,7 +79,8 @@ are allowed for forward-compatible readers.
 in the same range, and `totalistic.py` accepts `--rule` values `0–63`. Step
 counts must be positive. Invalid elementary inputs fail before an output file
 is created or replaced; the totalistic CLI writes only to standard output. The
-Python `run()` and `run_batch()` APIs also validate `cell_size` before creating
+Python `run()` and `run_batch()` APIs also require boolean `metrics`, `svg`, and
+`metadata` options and validate those options plus `cell_size` before creating
 their output directory, even when SVG output is not requested.
 
 To keep generated files elsewhere, pass the keyword-only `output_dir` option:
